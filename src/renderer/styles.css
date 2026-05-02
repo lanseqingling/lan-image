@@ -17,7 +17,7 @@
   --text-tertiary: #aeaeb2;
   --border-color: #e5e5ea;
   --accent-color: #007aff;
-  --column-gap: 12px;
+  --column-gap: 5px;
   --card-radius: 8px;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -576,9 +576,9 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 #viewer-content {

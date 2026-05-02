@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('api', {
   getImageDimensions: (filePath) => ipcRenderer.invoke('get-image-dimensions', filePath),
   windowMinimize: () => ipcRenderer.invoke('window-minimize'),
   windowMaximize: () => ipcRenderer.invoke('window-maximize'),
-  windowClose: () => ipcRenderer.invoke('window-close')
+  windowClose: () => ipcRenderer.invoke('window-close'),
+  openFolderInExplorer: (dirPath) => ipcRenderer.invoke('open-folder-in-explorer', dirPath)
 });

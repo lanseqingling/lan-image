@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, nativeImage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -98,6 +98,10 @@ ipcMain.handle('window-maximize', () => {
   }
 });
 ipcMain.handle('window-close', () => { mainWindow.close(); });
+
+ipcMain.handle('open-folder-in-explorer', (event, dirPath) => {
+  shell.openPath(dirPath);
+});
 
 ipcMain.handle('get-workspaces', () => {
   const config = loadConfig();

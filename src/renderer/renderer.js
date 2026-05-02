@@ -132,6 +132,15 @@ function showWorkspaceMenu(anchor, ws, index) {
     showRenameDialog(ws);
   });
 
+  const openFolderItem = document.createElement('div');
+  openFolderItem.className = 'workspace-menu-item';
+  openFolderItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><polyline points="9 14 12 11 15 14"/></svg><span>打开文件夹</span>';
+  openFolderItem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    window.api.openFolderInExplorer(ws.path);
+  });
+
   const sortItem = document.createElement('div');
   sortItem.className = 'workspace-menu-item workspace-menu-item-parent';
   sortItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="8" y2="18"/></svg><span>排序</span><svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
@@ -283,6 +292,7 @@ function showWorkspaceMenu(anchor, ws, index) {
   });
 
   menu.appendChild(renameItem);
+  menu.appendChild(openFolderItem);
   menu.appendChild(sortItem);
   menu.appendChild(moveUpItem);
   menu.appendChild(moveDownItem);
@@ -428,6 +438,7 @@ async function loadImages(dirPath) {
   renderWorkspaces();
 
   emptyState.classList.add('hidden');
+  emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>点击左侧 <strong>+</strong> 按钮添加图片文件夹</p>';
   waterfallContainer.style.display = 'flex';
 
   waterfallContainer.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>加载中...</div>';
@@ -444,7 +455,9 @@ async function loadImages(dirPath) {
   currentImages = images;
 
   if (images.length === 0) {
-    waterfallContainer.innerHTML = '<div class="loading-indicator">该文件夹下没有图片文件</div>';
+    waterfallContainer.style.display = 'none';
+    emptyState.classList.remove('hidden');
+    emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>该文件夹下没有图片文件</p>';
     return;
   }
 
@@ -468,7 +481,7 @@ async function renderWaterfall() {
   }
 
   const containerWidth = waterfallContainer.clientWidth - 32;
-  const columnWidth = (containerWidth - (cols - 1) * 12) / cols;
+  const columnWidth = (containerWidth - (cols - 1) * 5) / cols;
 
   const dimensionPromises = currentImages.map(img =>
     window.api.getImageDimensions(img.path).catch(() => ({ width: 300, height: 200 }))
@@ -482,7 +495,7 @@ async function renderWaterfall() {
     const displayHeight = columnWidth * aspectRatio;
 
     const shortestIndex = columnHeights.indexOf(Math.min(...columnHeights));
-    columnHeights[shortestIndex] += displayHeight + 12;
+    columnHeights[shortestIndex] += displayHeight + 5;
 
     const card = createImageCard(img, columnWidth, displayHeight);
     columns[shortestIndex].appendChild(card);
@@ -621,6 +634,14 @@ function setColumnCount(n) {
 }
 
 updateColumnCheck();
+
+document.getElementById('menu-refresh').addEventListener('click', async () => {
+  document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
+  if (activeWorkspacePath) {
+    imageCache[activeWorkspacePath] = null;
+    await loadImages(activeWorkspacePath);
+  }
+});
 
 document.getElementById('menu-cols-1').addEventListener('click', () => setColumnCount(1));
 document.getElementById('menu-cols-2').addEventListener('click', () => setColumnCount(2));
