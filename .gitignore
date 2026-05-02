@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+config.json
+*.log
+Thumbs.db
+.DS_Store
+/.idea/
+/package-lock.json

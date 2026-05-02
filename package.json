@@ -1,0 +1,37 @@
+{
+  "name": "lan-image",
+  "version": "1.0.0",
+  "description": "A local image viewer with waterfall layout",
+  "author": "LanImage",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "pack": "electron-packager . LanImage --platform=win32 --arch=x64 --out=dist --overwrite --icon=assets/icons/icon.ico --ignore=\"^/\\.git\" --ignore=\"^/\\.idea\" --ignore=\"^/\\.gitignore\" --ignore=\"^/README\\.md\" --ignore=\"^/AGENTS\\.md\" --ignore=\"^/node_modules\" --ignore=\"^/build\""
+  },
+  "build": {
+    "appId": "com.lanimage.app",
+    "productName": "LanImage",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/icons/icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/icons/icon.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-packager": "^17.1.2"
+  }
+}
