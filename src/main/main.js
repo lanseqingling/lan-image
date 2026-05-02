@@ -167,6 +167,11 @@ ipcMain.handle('get-image-dimensions', (event, filePath) => {
         const bits = buf.readUInt32LE(16);
         return { width: (bits & 0x3FFF) + 1, height: ((bits >> 14) & 0x3FFF) + 1 };
       }
+      if (buf.toString('ascii', 8, 12) === 'VP8X' && buf.length > 24) {
+        const w = ((buf[17] << 16) | (buf[16] << 8) | buf[15]) + 1;
+        const h = ((buf[20] << 16) | (buf[19] << 8) | buf[18]) + 1;
+        if (w > 0 && h > 0) return { width: w, height: h };
+      }
     }
 
     const data = fs.readFileSync(filePath);
@@ -178,7 +183,10 @@ ipcMain.handle('get-image-dimensions', (event, filePath) => {
     const mime = mimeMap[ext] || 'image/png';
     const image = nativeImage.createFromDataURL(`data:${mime};base64,${data.toString('base64')}`);
     const size = image.getSize();
-    return { width: size.width, height: size.height };
+    if (size.width > 0 && size.height > 0) {
+      return { width: size.width, height: size.height };
+    }
+    return { width: 300, height: 200 };
   } catch (err) {
     return { width: 300, height: 200 };
   }

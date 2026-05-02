@@ -491,8 +491,12 @@ async function renderWaterfall() {
   for (let i = 0; i < currentImages.length; i++) {
     const img = currentImages[i];
     const dims = dimensions[i];
-    const aspectRatio = dims.height / dims.width;
+    const w = dims.width || 300;
+    const h = dims.height || 200;
+    const aspectRatio = h / w;
     const displayHeight = columnWidth * aspectRatio;
+
+    if (!isFinite(displayHeight) || displayHeight <= 0) continue;
 
     const shortestIndex = columnHeights.indexOf(Math.min(...columnHeights));
     columnHeights[shortestIndex] += displayHeight + 5;
