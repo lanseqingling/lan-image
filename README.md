@@ -4,7 +4,17 @@
 
 ## 截图
 
-![](docs/img/img.png)
+> 瀑布流
+
+![](docs/img/img_1.png)
+
+> 横向翻页
+
+![](docs/img/img_2.png)
+
+> 文件列表
+
+![](docs/img/img_3.png)
 
 ## 功能
 
