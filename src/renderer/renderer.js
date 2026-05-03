@@ -726,6 +726,7 @@ sidebarResizeHandle.addEventListener('mousedown', (e) => {
   isResizing = true;
   resizeStartX = e.clientX;
   resizeStartWidth = sidebar.offsetWidth;
+  sidebar.classList.add('resizing');
   document.body.style.cursor = 'col-resize';
   e.preventDefault();
 });
@@ -740,6 +741,7 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('mouseup', () => {
   if (isResizing) {
     isResizing = false;
+    sidebar.classList.remove('resizing');
     document.body.style.cursor = '';
     const currentWidth = sidebar.offsetWidth;
     if (currentWidth < 120) {

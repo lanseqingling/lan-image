@@ -169,6 +169,10 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width 0.2s ease;
+}
+
+#sidebar.resizing {
   transition: none;
 }
 
@@ -228,6 +232,7 @@ html, body {
 #sidebar.collapsed .sidebar-header {
   justify-content: center;
   padding: 0;
+  min-height: 48px;
 }
 
 #sidebar.collapsed #add-folder-btn {
@@ -238,6 +243,7 @@ html, body {
   width: 48px;
   height: 48px;
   border-radius: 0;
+  transition: none;
 }
 
 #workspace-list {
