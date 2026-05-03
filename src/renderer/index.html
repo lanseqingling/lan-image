@@ -35,6 +35,20 @@
           </div>
           <div class="titlebar-dropdown-separator"></div>
           <div class="titlebar-dropdown-item titlebar-dropdown-disabled" style="font-size:12px;color:var(--text-tertiary);cursor:default;padding:5px 12px 3px;">
+            查看模式
+          </div>
+          <div class="titlebar-dropdown-item" id="menu-mode-waterfall">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg>
+            <span>瀑布流</span>
+            <svg class="mode-check-waterfall check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;width:14px;height:14px;margin-left:auto;color:var(--accent-color)"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="titlebar-dropdown-item" id="menu-mode-horizontal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><polyline points="10 9 14 12 10 15"/></svg>
+            <span>横向翻页</span>
+            <svg class="mode-check-horizontal check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;width:14px;height:14px;margin-left:auto;color:var(--accent-color)"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="titlebar-dropdown-separator"></div>
+          <div class="titlebar-dropdown-item titlebar-dropdown-disabled" style="font-size:12px;color:var(--text-tertiary);cursor:default;padding:5px 12px 3px;">
             布局列数
           </div>
           <div class="titlebar-dropdown-item" id="menu-cols-1">
@@ -124,6 +138,19 @@
         <p>点击左侧 <strong>+</strong> 按钮添加图片文件夹</p>
       </div>
       <div id="waterfall-container"></div>
+      <div id="horizontal-viewer" class="hidden">
+        <button id="hv-prev" class="hv-nav-btn hv-nav-prev" title="上一张">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div id="hv-image-area">
+          <img id="hv-image" src="" alt="">
+        </div>
+        <button id="hv-next" class="hv-nav-btn hv-nav-next" title="下一张">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div id="hv-thumbnail-strip"></div>
+        <div id="hv-counter"></div>
+      </div>
     </main>
   </div>
 

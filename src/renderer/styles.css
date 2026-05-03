@@ -764,3 +764,151 @@ html, body {
 .dialog-btn-confirm:hover {
   opacity: 0.85;
 }
+
+#horizontal-viewer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  background: var(--content-bg);
+}
+
+#horizontal-viewer.hidden {
+  display: none;
+}
+
+#hv-image-area {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+#hv-image {
+  max-width: 90%;
+  max-height: 85%;
+  object-fit: contain;
+  transform-origin: center center;
+  transition: opacity 0.2s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.hv-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+#horizontal-viewer:hover .hv-nav-btn {
+  opacity: 1;
+}
+
+.hv-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text-primary);
+}
+
+.hv-nav-prev {
+  left: 16px;
+}
+
+.hv-nav-next {
+  right: 16px;
+}
+
+#hv-thumbnail-strip {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  max-width: 80%;
+  overflow-x: auto;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#horizontal-viewer:hover #hv-thumbnail-strip {
+  opacity: 1;
+}
+
+#hv-thumbnail-strip::-webkit-scrollbar {
+  height: 3px;
+}
+
+#hv-thumbnail-strip::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 2px;
+}
+
+.hv-thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s ease;
+  opacity: 0.6;
+}
+
+.hv-thumb:hover {
+  opacity: 0.85;
+  transform: scale(1.08);
+}
+
+.hv-thumb.active {
+  border-color: var(--accent-color);
+  opacity: 1;
+}
+
+#hv-counter {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 3px 10px;
+  border-radius: 10px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#horizontal-viewer:hover #hv-counter {
+  opacity: 1;
+}

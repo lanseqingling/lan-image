@@ -3,6 +3,15 @@ let activeWorkspacePath = null;
 let currentImages = [];
 let imageCache = {};
 
+let viewMode = localStorage.getItem('lanimage-viewmode') || 'waterfall';
+let hvCurrentIndex = 0;
+let hvScale = 1;
+let hvTranslateX = 0;
+let hvTranslateY = 0;
+let hvIsDragging = false;
+let hvStartX = 0;
+let hvStartY = 0;
+
 const workspaceList = document.getElementById('workspace-list');
 const waterfallContainer = document.getElementById('waterfall-container');
 const emptyState = document.getElementById('empty-state');
@@ -14,6 +23,13 @@ const viewerImage = document.getElementById('viewer-image');
 const viewerClose = document.getElementById('viewer-close');
 const sidebar = document.getElementById('sidebar');
 const sidebarResizeHandle = document.getElementById('sidebar-resize-handle');
+const horizontalViewer = document.getElementById('horizontal-viewer');
+const hvImage = document.getElementById('hv-image');
+const hvImageArea = document.getElementById('hv-image-area');
+const hvPrev = document.getElementById('hv-prev');
+const hvNext = document.getElementById('hv-next');
+const hvThumbnailStrip = document.getElementById('hv-thumbnail-strip');
+const hvCounter = document.getElementById('hv-counter');
 
 let viewerScale = 1;
 let viewerStartX = 0;
@@ -435,14 +451,19 @@ function sortImages(images, ws) {
 function renderImageList(container, images, ws) {
   container.innerHTML = '';
   const sorted = sortImages(images, ws);
-  sorted.forEach(img => {
+  sorted.forEach((img, index) => {
     const item = document.createElement('div');
     item.className = 'workspace-image-item';
     item.textContent = img.name;
     item.title = img.path;
     item.addEventListener('click', (e) => {
       e.stopPropagation();
-      openViewer(img.path);
+      if (viewMode === 'horizontal') {
+        const idx = currentImages.findIndex(ci => ci.path === img.path);
+        if (idx >= 0) hvShowImage(idx);
+      } else {
+        openViewer(img.path);
+      }
     });
     container.appendChild(item);
   });
@@ -454,9 +475,17 @@ async function loadImages(dirPath) {
 
   emptyState.classList.add('hidden');
   emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>点击左侧 <strong>+</strong> 按钮添加图片文件夹</p>';
-  waterfallContainer.style.display = 'flex';
 
-  waterfallContainer.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>加载中...</div>';
+  if (viewMode === 'waterfall') {
+    waterfallContainer.style.display = 'flex';
+    waterfallContainer.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>加载中...</div>';
+  } else {
+    waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.remove('hidden');
+    hvImage.src = '';
+    hvCounter.textContent = '';
+    hvThumbnailStrip.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>加载中...</div>';
+  }
 
   let images = imageCache[dirPath];
   if (!images) {
@@ -471,12 +500,20 @@ async function loadImages(dirPath) {
 
   if (images.length === 0) {
     waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.add('hidden');
     emptyState.classList.remove('hidden');
     emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>该文件夹下没有图片文件</p>';
     return;
   }
 
-  await renderWaterfall();
+  if (viewMode === 'horizontal') {
+    waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.remove('hidden');
+    hvCurrentIndex = 0;
+    renderHorizontalView();
+  } else {
+    await renderWaterfall();
+  }
 }
 
 async function renderWaterfall() {
@@ -546,6 +583,92 @@ function createImageCard(img, displayWidth, displayHeight) {
   return card;
 }
 
+function setViewMode(mode) {
+  viewMode = mode;
+  localStorage.setItem('lanimage-viewmode', mode);
+  updateViewModeCheck();
+
+  if (mode === 'waterfall') {
+    horizontalViewer.classList.add('hidden');
+    waterfallContainer.style.display = 'flex';
+    if (currentImages.length > 0) {
+      renderWaterfall();
+    }
+  } else {
+    waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.remove('hidden');
+    if (currentImages.length > 0) {
+      hvCurrentIndex = 0;
+      renderHorizontalView();
+    }
+  }
+
+  document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
+}
+
+function renderHorizontalView() {
+  hvThumbnailStrip.innerHTML = '';
+
+  if (currentImages.length === 0) return;
+
+  currentImages.forEach((img, index) => {
+    const thumb = document.createElement('img');
+    thumb.className = 'hv-thumb' + (index === hvCurrentIndex ? ' active' : '');
+    thumb.src = toLocalImageUrl(img.path);
+    thumb.alt = img.name;
+    thumb.title = img.name;
+    thumb.addEventListener('click', () => {
+      hvShowImage(index);
+    });
+    hvThumbnailStrip.appendChild(thumb);
+  });
+
+  hvShowImage(hvCurrentIndex);
+}
+
+function hvShowImage(index) {
+  if (currentImages.length === 0) return;
+
+  if (index < 0) {
+    index = currentImages.length - 1;
+  } else if (index >= currentImages.length) {
+    index = 0;
+  }
+
+  hvCurrentIndex = index;
+  hvScale = 1;
+  hvTranslateX = 0;
+  hvTranslateY = 0;
+  updateHvTransform();
+
+  hvImage.style.opacity = '0';
+  hvImage.src = toLocalImageUrl(currentImages[index].path);
+  hvImage.onload = () => {
+    hvImage.style.opacity = '1';
+  };
+
+  hvCounter.textContent = (index + 1) + ' / ' + currentImages.length;
+
+  const thumbs = hvThumbnailStrip.querySelectorAll('.hv-thumb');
+  thumbs.forEach((t, i) => {
+    t.classList.toggle('active', i === index);
+  });
+
+  const activeThumb = thumbs[index];
+  if (activeThumb) {
+    activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+}
+
+function hvNavigate(direction) {
+  hvShowImage(hvCurrentIndex + direction);
+}
+
+function updateHvTransform() {
+  hvImage.style.transform = `translate(${hvTranslateX}px, ${hvTranslateY}px) scale(${hvScale})`;
+  hvImage.style.cursor = hvScale > 1 ? (hvIsDragging ? 'grabbing' : 'grab') : '';
+}
+
 function openViewer(filePath) {
   viewerScale = 1;
   viewerTranslateX = 0;
@@ -576,6 +699,13 @@ viewerBackdrop.addEventListener('click', closeViewer);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !imageViewer.classList.contains('hidden')) {
     closeViewer();
+  }
+  if (viewMode === 'horizontal' && !horizontalViewer.classList.contains('hidden')) {
+    if (e.key === 'ArrowLeft') {
+      hvNavigate(-1);
+    } else if (e.key === 'ArrowRight') {
+      hvNavigate(1);
+    }
   }
 });
 
@@ -622,6 +752,62 @@ document.addEventListener('mouseup', () => {
     isDragging = false;
     viewerImage.style.cursor = '';
   }
+  if (hvIsDragging) {
+    hvIsDragging = false;
+    updateHvTransform();
+  }
+});
+
+hvPrev.addEventListener('click', () => hvNavigate(-1));
+hvNext.addEventListener('click', () => hvNavigate(1));
+
+hvImageArea.addEventListener('wheel', (e) => {
+  if (horizontalViewer.classList.contains('hidden')) return;
+  e.preventDefault();
+
+  const delta = e.deltaY > 0 ? -0.1 : 0.1;
+  const newScale = Math.max(0.5, Math.min(10, hvScale * (1 + delta)));
+
+  const rect = hvImage.getBoundingClientRect();
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+  const imgCenterX = rect.left + rect.width / 2;
+  const imgCenterY = rect.top + rect.height / 2;
+
+  const dx = (mouseX - imgCenterX - hvTranslateX) * (1 - newScale / hvScale);
+  const dy = (mouseY - imgCenterY - hvTranslateY) * (1 - newScale / hvScale);
+
+  hvTranslateX += dx;
+  hvTranslateY += dy;
+  hvScale = newScale;
+  updateHvTransform();
+}, { passive: false });
+
+hvImage.addEventListener('mousedown', (e) => {
+  if (hvScale <= 1) return;
+  hvIsDragging = true;
+  hvStartX = e.clientX - hvTranslateX;
+  hvStartY = e.clientY - hvTranslateY;
+  updateHvTransform();
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!hvIsDragging) return;
+  hvTranslateX = e.clientX - hvStartX;
+  hvTranslateY = e.clientY - hvStartY;
+  updateHvTransform();
+});
+
+hvImage.addEventListener('dblclick', () => {
+  if (hvScale > 1) {
+    hvScale = 1;
+    hvTranslateX = 0;
+    hvTranslateY = 0;
+  } else {
+    hvScale = 2;
+  }
+  updateHvTransform();
 });
 
 let resizeTimeout;
@@ -629,7 +815,9 @@ window.addEventListener('resize', () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
     if (currentImages.length > 0) {
-      renderWaterfall();
+      if (viewMode === 'waterfall') {
+        renderWaterfall();
+      }
     }
   }, 300);
 });
@@ -642,17 +830,25 @@ function updateColumnCheck() {
   document.querySelector('.view-check-3').style.display = columnCount === 3 ? 'block' : 'none';
 }
 
+function updateViewModeCheck() {
+  const waterfallCheck = document.querySelector('.mode-check-waterfall');
+  const horizontalCheck = document.querySelector('.mode-check-horizontal');
+  if (waterfallCheck) waterfallCheck.style.display = viewMode === 'waterfall' ? 'block' : 'none';
+  if (horizontalCheck) horizontalCheck.style.display = viewMode === 'horizontal' ? 'block' : 'none';
+  updateColumnCheck();
+}
+
 function setColumnCount(n) {
   columnCount = n;
   localStorage.setItem('lanimage-columns', String(n));
   updateColumnCheck();
   document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
-  if (currentImages.length > 0) {
+  if (currentImages.length > 0 && viewMode === 'waterfall') {
     renderWaterfall();
   }
 }
 
-updateColumnCheck();
+updateViewModeCheck();
 
 document.getElementById('menu-refresh').addEventListener('click', async () => {
   document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
@@ -665,6 +861,9 @@ document.getElementById('menu-refresh').addEventListener('click', async () => {
 document.getElementById('menu-cols-1').addEventListener('click', () => setColumnCount(1));
 document.getElementById('menu-cols-2').addEventListener('click', () => setColumnCount(2));
 document.getElementById('menu-cols-3').addEventListener('click', () => setColumnCount(3));
+
+document.getElementById('menu-mode-waterfall').addEventListener('click', () => setViewMode('waterfall'));
+document.getElementById('menu-mode-horizontal').addEventListener('click', () => setViewMode('horizontal'));
 
 sidebarCollapseBtn.addEventListener('click', () => {
   if (isCollapsed) {
