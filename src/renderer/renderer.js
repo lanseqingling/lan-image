@@ -717,6 +717,11 @@ document.getElementById('menu-minimize').addEventListener('click', () => window.
 document.getElementById('menu-maximize').addEventListener('click', () => window.api.windowMaximize());
 document.getElementById('menu-close').addEventListener('click', () => window.api.windowClose());
 
+document.getElementById('menu-github').addEventListener('click', () => {
+  document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
+  window.api.openExternal('https://github.com/lanseqingling/lan-image');
+});
+
 document.getElementById('btn-minimize').addEventListener('click', () => window.api.windowMinimize());
 document.getElementById('btn-maximize').addEventListener('click', () => window.api.windowMaximize());
 document.getElementById('btn-close').addEventListener('click', () => window.api.windowClose());

@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('api', {
   windowMinimize: () => ipcRenderer.invoke('window-minimize'),
   windowMaximize: () => ipcRenderer.invoke('window-maximize'),
   windowClose: () => ipcRenderer.invoke('window-close'),
-  openFolderInExplorer: (dirPath) => ipcRenderer.invoke('open-folder-in-explorer', dirPath)
+  openFolderInExplorer: (dirPath) => ipcRenderer.invoke('open-folder-in-explorer', dirPath),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url)
 });

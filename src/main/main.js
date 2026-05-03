@@ -103,6 +103,10 @@ ipcMain.handle('open-folder-in-explorer', (event, dirPath) => {
   shell.openPath(dirPath);
 });
 
+ipcMain.handle('open-external', (event, url) => {
+  shell.openExternal(url);
+});
+
 ipcMain.handle('get-workspaces', () => {
   const config = loadConfig();
   return config.workspaces || [];
