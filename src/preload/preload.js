@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
+  selectDirectories: () => ipcRenderer.invoke('select-directories'),
   getWorkspaces: () => ipcRenderer.invoke('get-workspaces'),
   saveWorkspaces: (workspaces) => ipcRenderer.invoke('save-workspaces', workspaces),
   getImagesInDirectory: (dirPath) => ipcRenderer.invoke('get-images-in-directory', dirPath),

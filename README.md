@@ -1,6 +1,10 @@
 # LanImage
 
-现代轻量 Windows 图片查看器，Electron 架构，三种查看模式。
+基于 Electron 的现代轻量级 Windows 图片查看器，支持瀑布流、横向翻页、文件列表三种查看模式，提供流畅的高清图片浏览体验。
+
+<p align="center">
+  <img src="assets/icons/icon.png" width="128" height="128" alt="LanImage">
+</p>
 
 ## 截图
 

@@ -89,6 +89,14 @@ ipcMain.handle('select-directory', async () => {
   return result.filePaths[0];
 });
 
+ipcMain.handle('select-directories', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory', 'multiSelections']
+  });
+  if (result.canceled) return null;
+  return result.filePaths;
+});
+
 ipcMain.handle('window-minimize', () => { mainWindow.minimize(); });
 ipcMain.handle('window-maximize', () => {
   if (mainWindow.isMaximized()) {

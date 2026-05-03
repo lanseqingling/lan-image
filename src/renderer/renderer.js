@@ -63,17 +63,22 @@ async function init() {
 }
 
 addFolderBtn.addEventListener('click', async () => {
-  const dirPath = await window.api.selectDirectory();
-  if (!dirPath) return;
+  const dirPaths = await window.api.selectDirectories();
+  if (!dirPaths || dirPaths.length === 0) return;
 
-  const exists = workspaces.some(w => w.path === dirPath);
-  if (exists) return;
-
-  const name = dirPath.split(/[\\/]/).pop() || dirPath;
-  workspaces.push({ path: dirPath, name, expanded: true });
+  let lastAddedPath = null;
+  for (const dirPath of dirPaths) {
+    const exists = workspaces.some(w => w.path === dirPath);
+    if (exists) continue;
+    const name = dirPath.split(/[\\/]/).pop() || dirPath;
+    workspaces.push({ path: dirPath, name, expanded: true });
+    lastAddedPath = dirPath;
+  }
   await saveWorkspaces();
   renderWorkspaces();
-  await loadImages(dirPath);
+  if (lastAddedPath) {
+    await loadImages(lastAddedPath);
+  }
 });
 
 async function saveWorkspaces() {
@@ -1192,15 +1197,21 @@ document.querySelectorAll('.titlebar-menu-item').forEach(item => {
 
 document.getElementById('menu-add-folder').addEventListener('click', async () => {
   document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
-  const dirPath = await window.api.selectDirectory();
-  if (!dirPath) return;
-  const exists = workspaces.some(w => w.path === dirPath);
-  if (exists) return;
-  const name = dirPath.split(/[\\/]/).pop() || dirPath;
-  workspaces.push({ path: dirPath, name, expanded: true });
+  const dirPaths = await window.api.selectDirectories();
+  if (!dirPaths || dirPaths.length === 0) return;
+  let lastAddedPath = null;
+  for (const dirPath of dirPaths) {
+    const exists = workspaces.some(w => w.path === dirPath);
+    if (exists) continue;
+    const name = dirPath.split(/[\\/]/).pop() || dirPath;
+    workspaces.push({ path: dirPath, name, expanded: true });
+    lastAddedPath = dirPath;
+  }
   await saveWorkspaces();
   renderWorkspaces();
-  await loadImages(dirPath);
+  if (lastAddedPath) {
+    await loadImages(lastAddedPath);
+  }
 });
 
 document.getElementById('menu-quit').addEventListener('click', () => window.api.windowClose());
