@@ -460,24 +460,6 @@ html, body {
   display: block;
 }
 
-.workspace-image-item {
-  padding: 5px 10px 5px 34px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: background 0.15s ease;
-  border-radius: 4px;
-  margin: 0 4px;
-}
-
-.workspace-image-item:hover {
-  background: var(--sidebar-hover);
-  color: var(--text-primary);
-}
-
 #content {
   flex: 1;
   overflow-y: overlay;
@@ -1001,5 +983,153 @@ html, body {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.image-context-menu {
+  position: fixed;
+  background: var(--content-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 4px 0;
+  z-index: 500;
+  min-width: 160px;
+}
+
+.image-context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.1s ease;
+  white-space: nowrap;
+}
+
+.image-context-item:hover {
+  background: var(--sidebar-hover);
+}
+
+.image-context-item svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.image-context-item.checked svg {
+  color: var(--accent-color);
+}
+
+.image-context-item .check-icon {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  color: var(--accent-color);
+}
+
+.image-context-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 8px;
+}
+
+.workspace-image-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px 5px 34px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+  border-radius: 4px;
+  margin: 0 4px;
+  gap: 4px;
+}
+
+.workspace-image-item:hover {
+  background: var(--sidebar-hover);
+  color: var(--text-primary);
+}
+
+.workspace-image-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.workspace-image-more {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.workspace-image-item:hover .workspace-image-more {
+  opacity: 1;
+}
+
+.workspace-image-more:hover {
+  background: var(--sidebar-hover);
+  color: var(--text-primary);
+}
+
+.hidden-eye-icon {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+.prop-dialog-box {
+  min-width: 360px;
+  max-width: 440px;
+}
+
+.prop-info {
+  margin-top: 12px;
+}
+
+.prop-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 6px 0;
+  gap: 12px;
+}
+
+.prop-label {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  width: 60px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.prop-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+}
+
+.prop-location {
+  font-size: 12px;
   color: var(--text-secondary);
 }

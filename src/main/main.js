@@ -127,6 +127,21 @@ ipcMain.handle('get-images-in-directory', (event, dirPath) => {
   return getImageFiles(dirPath);
 });
 
+ipcMain.handle('get-file-info', (event, filePath) => {
+  try {
+    const stat = fs.statSync(filePath);
+    return {
+      size: stat.size,
+      mtime: stat.mtimeMs,
+      birthtime: stat.birthtimeMs,
+      isFile: stat.isFile(),
+      isDirectory: stat.isDirectory()
+    };
+  } catch (err) {
+    return null;
+  }
+});
+
 ipcMain.handle('get-image-dimensions', (event, filePath) => {
   try {
     const ext = path.extname(filePath).toLowerCase();

@@ -11,5 +11,6 @@ contextBridge.exposeInMainWorld('api', {
   windowClose: () => ipcRenderer.invoke('window-close'),
   openFolderInExplorer: (dirPath) => ipcRenderer.invoke('open-folder-in-explorer', dirPath),
   showItemInFolder: (filePath) => ipcRenderer.invoke('show-item-in-folder', filePath),
-  openExternal: (url) => ipcRenderer.invoke('open-external', url)
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  getFileInfo: (filePath) => ipcRenderer.invoke('get-file-info', filePath)
 });

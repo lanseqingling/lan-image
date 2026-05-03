@@ -1,6 +1,7 @@
 let workspaces = [];
 let activeWorkspacePath = null;
 let currentImages = [];
+let allImages = [];
 let imageCache = {};
 
 let viewMode = localStorage.getItem('lanimage-viewmode') || 'waterfall';
@@ -81,11 +82,36 @@ async function saveWorkspaces() {
 
 function closeAllMenus() {
   document.querySelectorAll('.workspace-menu').forEach(m => m.remove());
-  document.querySelectorAll('.grid-context-menu').forEach(m => m.remove());
+  document.querySelectorAll('.image-context-menu').forEach(m => m.remove());
 }
 
 function getDisplayName(ws) {
   return ws.alias || ws.name;
+}
+
+function isImageHidden(img, ws) {
+  if (!ws || !ws.hiddenPaths) return false;
+  return ws.hiddenPaths.includes(img.path);
+}
+
+async function toggleImageHidden(img, ws) {
+  if (!ws) return;
+  if (!ws.hiddenPaths) ws.hiddenPaths = [];
+  const idx = ws.hiddenPaths.indexOf(img.path);
+  if (idx >= 0) {
+    ws.hiddenPaths.splice(idx, 1);
+  } else {
+    ws.hiddenPaths.push(img.path);
+  }
+  await saveWorkspaces();
+  await refreshCurrentView();
+}
+
+async function refreshCurrentView() {
+  if (activeWorkspacePath) {
+    imageCache[activeWorkspacePath] = null;
+    await loadImages(activeWorkspacePath);
+  }
 }
 
 function showRenameDialog(ws) {
@@ -135,6 +161,118 @@ function showRenameDialog(ws) {
   confirmBtn.addEventListener('click', onConfirm);
   cancelBtn.addEventListener('click', onCancel);
   input.addEventListener('keydown', onKeydown);
+}
+
+async function showPropertiesDialog(img) {
+  const dialog = document.getElementById('properties-dialog');
+  const closeBtn = document.getElementById('properties-close');
+
+  document.getElementById('prop-name').textContent = img.name;
+  document.getElementById('prop-type').textContent = (img.ext || img.name.split('.').pop()).toUpperCase();
+  document.getElementById('prop-location').textContent = img.path;
+
+  document.getElementById('prop-size').textContent = '计算中...';
+  document.getElementById('prop-created').textContent = '计算中...';
+  document.getElementById('prop-modified').textContent = '计算中...';
+  document.getElementById('prop-dimensions').textContent = '计算中...';
+
+  dialog.classList.remove('hidden');
+
+  const onClose = () => {
+    dialog.classList.add('hidden');
+    closeBtn.removeEventListener('click', onClose);
+    dialog.removeEventListener('click', onBackdropClick);
+  };
+
+  const onBackdropClick = (e) => {
+    if (e.target === dialog) onClose();
+  };
+
+  closeBtn.addEventListener('click', onClose);
+  dialog.addEventListener('click', onBackdropClick);
+
+  const fileInfo = await window.api.getFileInfo(img.path);
+  if (fileInfo && !dialog.classList.contains('hidden')) {
+    document.getElementById('prop-size').textContent = formatFileSize(fileInfo.size);
+    document.getElementById('prop-created').textContent = formatDate(fileInfo.birthtime);
+    document.getElementById('prop-modified').textContent = formatDate(fileInfo.mtime);
+  }
+
+  const dims = await window.api.getImageDimensions(img.path).catch(() => null);
+  if (dims && !dialog.classList.contains('hidden')) {
+    document.getElementById('prop-dimensions').textContent = dims.width + ' × ' + dims.height;
+  } else if (!dialog.classList.contains('hidden')) {
+    document.getElementById('prop-dimensions').textContent = '未知';
+  }
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 2 : 0) + ' ' + units[i];
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return '未知';
+  const d = new Date(timestamp);
+  const pad = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+
+function showImageContextMenu(x, y, img, ws) {
+  closeAllMenus();
+  const menu = document.createElement('div');
+  menu.className = 'image-context-menu';
+
+  const openItem = document.createElement('div');
+  openItem.className = 'image-context-item';
+  openItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="12 11 12 17"/><polyline points="9 14 12 11 15 14"/></svg><span>打开文件位置</span>';
+  openItem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    window.api.showItemInFolder(img.path);
+  });
+
+  const propItem = document.createElement('div');
+  propItem.className = 'image-context-item';
+  propItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>属性</span>';
+  propItem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    showPropertiesDialog(img);
+  });
+
+  const separator = document.createElement('div');
+  separator.className = 'image-context-separator';
+
+  const hidden = isImageHidden(img, ws);
+  const hideItem = document.createElement('div');
+  hideItem.className = 'image-context-item' + (hidden ? ' checked' : '');
+  hideItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>隐藏</span>' + (hidden ? '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+  hideItem.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    await toggleImageHidden(img, ws);
+  });
+
+  menu.appendChild(openItem);
+  menu.appendChild(propItem);
+  menu.appendChild(separator);
+  menu.appendChild(hideItem);
+  document.body.appendChild(menu);
+
+  let top = y;
+  let left = x;
+  if (top + menu.offsetHeight > window.innerHeight) {
+    top = window.innerHeight - menu.offsetHeight - 8;
+  }
+  if (left + menu.offsetWidth > window.innerWidth) {
+    left = window.innerWidth - menu.offsetWidth - 8;
+  }
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
 }
 
 function showWorkspaceMenu(anchor, ws, index) {
@@ -315,6 +453,7 @@ function showWorkspaceMenu(anchor, ws, index) {
     if (activeWorkspacePath === ws.path) {
       activeWorkspacePath = null;
       currentImages = [];
+      allImages = [];
       renderWaterfall();
       emptyState.classList.remove('hidden');
       waterfallContainer.style.display = 'none';
@@ -453,12 +592,54 @@ function sortImages(images, ws) {
 function renderImageList(container, images, ws) {
   container.innerHTML = '';
   const sorted = sortImages(images, ws);
-  sorted.forEach((img, index) => {
+  sorted.forEach((img) => {
     const item = document.createElement('div');
     item.className = 'workspace-image-item';
-    item.textContent = img.name;
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'workspace-image-name';
+    nameSpan.textContent = img.name;
+
+    const hidden = isImageHidden(img, ws);
+    if (hidden) {
+      const eyeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      eyeIcon.setAttribute('width', '12');
+      eyeIcon.setAttribute('height', '12');
+      eyeIcon.setAttribute('viewBox', '0 0 24 24');
+      eyeIcon.setAttribute('fill', 'none');
+      eyeIcon.setAttribute('stroke', 'currentColor');
+      eyeIcon.setAttribute('stroke-width', '2');
+      eyeIcon.setAttribute('stroke-linecap', 'round');
+      eyeIcon.setAttribute('stroke-linejoin', 'round');
+      eyeIcon.classList.add('hidden-eye-icon');
+      const eyePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      eyePath.setAttribute('d', 'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24');
+      eyeIcon.appendChild(eyePath);
+      const eyeLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      eyeLine.setAttribute('x1', '1');
+      eyeLine.setAttribute('y1', '1');
+      eyeLine.setAttribute('x2', '23');
+      eyeLine.setAttribute('y2', '23');
+      eyeIcon.appendChild(eyeLine);
+      item.appendChild(eyeIcon);
+    }
+
+    const moreBtn = document.createElement('button');
+    moreBtn.className = 'workspace-image-more';
+    moreBtn.title = '更多';
+    moreBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+    moreBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rect = moreBtn.getBoundingClientRect();
+      showImageContextMenu(rect.left, rect.bottom + 2, img, ws);
+    });
+
+    item.appendChild(nameSpan);
+    item.appendChild(moreBtn);
     item.title = img.path;
+
     item.addEventListener('click', (e) => {
+      if (e.target.closest('.workspace-image-more')) return;
       e.stopPropagation();
       if (viewMode === 'horizontal') {
         const idx = currentImages.findIndex(ci => ci.path === img.path);
@@ -469,6 +650,7 @@ function renderImageList(container, images, ws) {
         openViewer(img.path);
       }
     });
+
     container.appendChild(item);
   });
 }
@@ -504,16 +686,24 @@ async function loadImages(dirPath) {
   }
 
   const ws = workspaces.find(w => w.path === dirPath);
-  images = sortImages(images, ws);
+  allImages = sortImages(images, ws);
+  currentImages = allImages.filter(img => !isImageHidden(img, ws));
 
-  currentImages = images;
-
-  if (images.length === 0) {
+  if (allImages.length === 0) {
     waterfallContainer.style.display = 'none';
     horizontalViewer.classList.add('hidden');
     gridContainer.classList.add('hidden');
     emptyState.classList.remove('hidden');
     emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>该文件夹下没有图片文件</p>';
+    return;
+  }
+
+  if (currentImages.length === 0 && allImages.length > 0) {
+    waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.add('hidden');
+    gridContainer.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg><p>所有图片已隐藏</p>';
     return;
   }
 
@@ -557,6 +747,8 @@ async function renderWaterfall() {
   );
   const dimensions = await Promise.all(dimensionPromises);
 
+  const ws = workspaces.find(w => w.path === activeWorkspacePath);
+
   for (let i = 0; i < currentImages.length; i++) {
     const img = currentImages[i];
     const dims = dimensions[i];
@@ -570,12 +762,12 @@ async function renderWaterfall() {
     const shortestIndex = columnHeights.indexOf(Math.min(...columnHeights));
     columnHeights[shortestIndex] += displayHeight + 5;
 
-    const card = createImageCard(img, columnWidth, displayHeight);
+    const card = createImageCard(img, columnWidth, displayHeight, ws);
     columns[shortestIndex].appendChild(card);
   }
 }
 
-function createImageCard(img, displayWidth, displayHeight) {
+function createImageCard(img, displayWidth, displayHeight, ws) {
   const card = document.createElement('div');
   card.className = 'waterfall-card';
 
@@ -596,6 +788,12 @@ function createImageCard(img, displayWidth, displayHeight) {
 
   card.appendChild(imgEl);
   card.appendChild(nameEl);
+
+  card.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    showImageContextMenu(e.clientX, e.clientY, img, ws);
+  });
 
   return card;
 }
@@ -652,6 +850,16 @@ function renderHorizontalView() {
   hvShowImage(hvCurrentIndex);
 }
 
+hvImageArea.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  if (currentImages.length === 0) return;
+  const ws = workspaces.find(w => w.path === activeWorkspacePath);
+  const currentImg = currentImages[hvCurrentIndex];
+  if (currentImg) {
+    showImageContextMenu(e.clientX, e.clientY, currentImg, ws);
+  }
+});
+
 function hvShowImage(index) {
   if (currentImages.length === 0) return;
 
@@ -700,6 +908,8 @@ function renderGridView() {
 
   if (currentImages.length === 0) return;
 
+  const ws = workspaces.find(w => w.path === activeWorkspacePath);
+
   currentImages.forEach((img) => {
     const item = document.createElement('div');
     item.className = 'grid-item';
@@ -729,40 +939,11 @@ function renderGridView() {
     item.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      closeAllMenus();
-      showGridContextMenu(e.clientX, e.clientY, img);
+      showImageContextMenu(e.clientX, e.clientY, img, ws);
     });
 
     gridContainer.appendChild(item);
   });
-}
-
-function showGridContextMenu(x, y, img) {
-  const menu = document.createElement('div');
-  menu.className = 'grid-context-menu';
-
-  const openItem = document.createElement('div');
-  openItem.className = 'grid-context-item';
-  openItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="12 11 12 17"/><polyline points="9 14 12 11 15 14"/></svg><span>打开文件位置</span>';
-  openItem.addEventListener('click', (e) => {
-    e.stopPropagation();
-    closeAllMenus();
-    window.api.showItemInFolder(img.path);
-  });
-
-  menu.appendChild(openItem);
-  document.body.appendChild(menu);
-
-  let top = y;
-  let left = x;
-  if (top + menu.offsetHeight > window.innerHeight) {
-    top = window.innerHeight - menu.offsetHeight - 8;
-  }
-  if (left + menu.offsetWidth > window.innerWidth) {
-    left = window.innerWidth - menu.offsetWidth - 8;
-  }
-  menu.style.top = top + 'px';
-  menu.style.left = left + 'px';
 }
 
 function openViewer(filePath) {
@@ -793,8 +974,14 @@ viewerClose.addEventListener('click', closeViewer);
 viewerBackdrop.addEventListener('click', closeViewer);
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !imageViewer.classList.contains('hidden')) {
-    closeViewer();
+  if (e.key === 'Escape') {
+    if (!imageViewer.classList.contains('hidden')) {
+      closeViewer();
+    }
+    const propDialog = document.getElementById('properties-dialog');
+    if (propDialog && !propDialog.classList.contains('hidden')) {
+      propDialog.classList.add('hidden');
+    }
   }
   if (viewMode === 'horizontal' && !horizontalViewer.classList.contains('hidden')) {
     if (e.key === 'ArrowLeft') {
@@ -956,10 +1143,7 @@ updateViewModeCheck();
 
 document.getElementById('menu-refresh').addEventListener('click', async () => {
   document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
-  if (activeWorkspacePath) {
-    imageCache[activeWorkspacePath] = null;
-    await loadImages(activeWorkspacePath);
-  }
+  await refreshCurrentView();
 });
 
 document.getElementById('menu-cols-1').addEventListener('click', () => setColumnCount(1));
@@ -987,8 +1171,8 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('.workspace-menu') && !e.target.closest('.workspace-more')) {
     closeAllMenus();
   }
-  if (!e.target.closest('.grid-context-menu')) {
-    document.querySelectorAll('.grid-context-menu').forEach(m => m.remove());
+  if (!e.target.closest('.image-context-menu') && !e.target.closest('.workspace-image-more')) {
+    document.querySelectorAll('.image-context-menu').forEach(m => m.remove());
   }
   if (!e.target.closest('.titlebar-menu-item')) {
     document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
