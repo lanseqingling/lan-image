@@ -18,7 +18,7 @@
   --border-color: #e5e5ea;
   --accent-color: #007aff;
   --column-gap: 5px;
-  --card-radius: 8px;
+  --card-radius: 4px;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

@@ -244,6 +244,20 @@ function showWorkspaceMenu(anchor, ws, index) {
     sortSubMenu.classList.remove('visible');
   });
 
+  const pinItem = document.createElement('div');
+  pinItem.className = 'workspace-menu-item';
+  pinItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg><span>置顶</span>';
+  pinItem.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    if (index > 0) {
+      workspaces.splice(index, 1);
+      workspaces.unshift(ws);
+      await saveWorkspaces();
+      renderWorkspaces();
+    }
+  });
+
   const moveUpItem = document.createElement('div');
   moveUpItem.className = 'workspace-menu-item';
   moveUpItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg><span>上移</span>';
@@ -291,9 +305,10 @@ function showWorkspaceMenu(anchor, ws, index) {
     renderWorkspaces();
   });
 
-  menu.appendChild(renameItem);
   menu.appendChild(openFolderItem);
+  menu.appendChild(renameItem);
   menu.appendChild(sortItem);
+  menu.appendChild(pinItem);
   menu.appendChild(moveUpItem);
   menu.appendChild(moveDownItem);
   menu.appendChild(removeItem);
