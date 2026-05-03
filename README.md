@@ -1,6 +1,6 @@
 # LanImage
 
-Windows 本地图片查看器，Electron 构建。
+现代轻量 Windows 图片查看器，Electron 架构。
 
 ## 截图
 

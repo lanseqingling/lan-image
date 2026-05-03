@@ -103,6 +103,10 @@ ipcMain.handle('open-folder-in-explorer', (event, dirPath) => {
   shell.openPath(dirPath);
 });
 
+ipcMain.handle('show-item-in-folder', (event, filePath) => {
+  shell.showItemInFolder(filePath);
+});
+
 ipcMain.handle('open-external', (event, url) => {
   shell.openExternal(url);
 });

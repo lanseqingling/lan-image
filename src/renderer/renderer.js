@@ -30,6 +30,7 @@ const hvPrev = document.getElementById('hv-prev');
 const hvNext = document.getElementById('hv-next');
 const hvThumbnailStrip = document.getElementById('hv-thumbnail-strip');
 const hvCounter = document.getElementById('hv-counter');
+const gridContainer = document.getElementById('grid-container');
 
 let viewerScale = 1;
 let viewerStartX = 0;
@@ -80,6 +81,7 @@ async function saveWorkspaces() {
 
 function closeAllMenus() {
   document.querySelectorAll('.workspace-menu').forEach(m => m.remove());
+  document.querySelectorAll('.grid-context-menu').forEach(m => m.remove());
 }
 
 function getDisplayName(ws) {
@@ -461,6 +463,8 @@ function renderImageList(container, images, ws) {
       if (viewMode === 'horizontal') {
         const idx = currentImages.findIndex(ci => ci.path === img.path);
         if (idx >= 0) hvShowImage(idx);
+      } else if (viewMode === 'grid') {
+        openViewer(img.path);
       } else {
         openViewer(img.path);
       }
@@ -479,12 +483,18 @@ async function loadImages(dirPath) {
   if (viewMode === 'waterfall') {
     waterfallContainer.style.display = 'flex';
     waterfallContainer.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>加载中...</div>';
-  } else {
+  } else if (viewMode === 'horizontal') {
     waterfallContainer.style.display = 'none';
+    gridContainer.classList.add('hidden');
     horizontalViewer.classList.remove('hidden');
     hvImage.src = '';
     hvCounter.textContent = '';
     hvThumbnailStrip.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>加载中...</div>';
+  } else if (viewMode === 'grid') {
+    waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.add('hidden');
+    gridContainer.classList.remove('hidden');
+    gridContainer.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>加载中...</div>';
   }
 
   let images = imageCache[dirPath];
@@ -501,6 +511,7 @@ async function loadImages(dirPath) {
   if (images.length === 0) {
     waterfallContainer.style.display = 'none';
     horizontalViewer.classList.add('hidden');
+    gridContainer.classList.add('hidden');
     emptyState.classList.remove('hidden');
     emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>该文件夹下没有图片文件</p>';
     return;
@@ -508,9 +519,15 @@ async function loadImages(dirPath) {
 
   if (viewMode === 'horizontal') {
     waterfallContainer.style.display = 'none';
+    gridContainer.classList.add('hidden');
     horizontalViewer.classList.remove('hidden');
     hvCurrentIndex = 0;
     renderHorizontalView();
+  } else if (viewMode === 'grid') {
+    waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.add('hidden');
+    gridContainer.classList.remove('hidden');
+    renderGridView();
   } else {
     await renderWaterfall();
   }
@@ -590,16 +607,25 @@ function setViewMode(mode) {
 
   if (mode === 'waterfall') {
     horizontalViewer.classList.add('hidden');
+    gridContainer.classList.add('hidden');
     waterfallContainer.style.display = 'flex';
     if (currentImages.length > 0) {
       renderWaterfall();
     }
-  } else {
+  } else if (mode === 'horizontal') {
     waterfallContainer.style.display = 'none';
+    gridContainer.classList.add('hidden');
     horizontalViewer.classList.remove('hidden');
     if (currentImages.length > 0) {
       hvCurrentIndex = 0;
       renderHorizontalView();
+    }
+  } else if (mode === 'grid') {
+    waterfallContainer.style.display = 'none';
+    horizontalViewer.classList.add('hidden');
+    gridContainer.classList.remove('hidden');
+    if (currentImages.length > 0) {
+      renderGridView();
     }
   }
 
@@ -667,6 +693,76 @@ function hvNavigate(direction) {
 function updateHvTransform() {
   hvImage.style.transform = `translate(${hvTranslateX}px, ${hvTranslateY}px) scale(${hvScale})`;
   hvImage.style.cursor = hvScale > 1 ? (hvIsDragging ? 'grabbing' : 'grab') : '';
+}
+
+function renderGridView() {
+  gridContainer.innerHTML = '';
+
+  if (currentImages.length === 0) return;
+
+  currentImages.forEach((img) => {
+    const item = document.createElement('div');
+    item.className = 'grid-item';
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'grid-thumb-wrap';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'grid-thumb';
+    thumb.alt = img.name;
+    thumb.loading = 'lazy';
+    thumb.src = toLocalImageUrl(img.path);
+
+    thumbWrap.appendChild(thumb);
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'grid-name';
+    nameEl.textContent = img.name;
+
+    item.appendChild(thumbWrap);
+    item.appendChild(nameEl);
+
+    item.addEventListener('click', () => {
+      openViewer(img.path);
+    });
+
+    item.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeAllMenus();
+      showGridContextMenu(e.clientX, e.clientY, img);
+    });
+
+    gridContainer.appendChild(item);
+  });
+}
+
+function showGridContextMenu(x, y, img) {
+  const menu = document.createElement('div');
+  menu.className = 'grid-context-menu';
+
+  const openItem = document.createElement('div');
+  openItem.className = 'grid-context-item';
+  openItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="12 11 12 17"/><polyline points="9 14 12 11 15 14"/></svg><span>打开文件位置</span>';
+  openItem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    window.api.showItemInFolder(img.path);
+  });
+
+  menu.appendChild(openItem);
+  document.body.appendChild(menu);
+
+  let top = y;
+  let left = x;
+  if (top + menu.offsetHeight > window.innerHeight) {
+    top = window.innerHeight - menu.offsetHeight - 8;
+  }
+  if (left + menu.offsetWidth > window.innerWidth) {
+    left = window.innerWidth - menu.offsetWidth - 8;
+  }
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
 }
 
 function openViewer(filePath) {
@@ -799,6 +895,10 @@ document.addEventListener('mousemove', (e) => {
   updateHvTransform();
 });
 
+gridContainer.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+});
+
 hvImage.addEventListener('dblclick', () => {
   if (hvScale > 1) {
     hvScale = 1;
@@ -817,6 +917,8 @@ window.addEventListener('resize', () => {
     if (currentImages.length > 0) {
       if (viewMode === 'waterfall') {
         renderWaterfall();
+      } else if (viewMode === 'grid') {
+        renderGridView();
       }
     }
   }, 300);
@@ -833,8 +935,10 @@ function updateColumnCheck() {
 function updateViewModeCheck() {
   const waterfallCheck = document.querySelector('.mode-check-waterfall');
   const horizontalCheck = document.querySelector('.mode-check-horizontal');
+  const gridCheck = document.querySelector('.mode-check-grid');
   if (waterfallCheck) waterfallCheck.style.display = viewMode === 'waterfall' ? 'block' : 'none';
   if (horizontalCheck) horizontalCheck.style.display = viewMode === 'horizontal' ? 'block' : 'none';
+  if (gridCheck) gridCheck.style.display = viewMode === 'grid' ? 'block' : 'none';
   updateColumnCheck();
 }
 
@@ -864,6 +968,7 @@ document.getElementById('menu-cols-3').addEventListener('click', () => setColumn
 
 document.getElementById('menu-mode-waterfall').addEventListener('click', () => setViewMode('waterfall'));
 document.getElementById('menu-mode-horizontal').addEventListener('click', () => setViewMode('horizontal'));
+document.getElementById('menu-mode-grid').addEventListener('click', () => setViewMode('grid'));
 
 sidebarCollapseBtn.addEventListener('click', () => {
   if (isCollapsed) {
@@ -881,6 +986,9 @@ sidebarCollapseBtn.addEventListener('click', () => {
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.workspace-menu') && !e.target.closest('.workspace-more')) {
     closeAllMenus();
+  }
+  if (!e.target.closest('.grid-context-menu')) {
+    document.querySelectorAll('.grid-context-menu').forEach(m => m.remove());
   }
   if (!e.target.closest('.titlebar-menu-item')) {
     document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
