@@ -32,6 +32,9 @@ config.json            → 运行时配置（自动生成，不提交）
 | `getImagesInDirectory` | 扫描目录图片（含 mtime） |
 | `getImageDimensions` | 从文件头读取图片尺寸 |
 | `windowMinimize` / `windowMaximize` / `windowClose` | 窗口控制 |
+| `openFolderInExplorer` | 在资源管理器中打开文件夹 |
+| `showItemInFolder` | 在资源管理器中定位文件 |
+| `openExternal` | 打开外部链接 |
 
 新增 IPC：main.js 添加 handler → preload.js 暴露方法 → renderer.js 调用
 
@@ -39,7 +42,10 @@ config.json            → 运行时配置（自动生成，不提交）
 
 - `frame: false` 无边框窗口，自定义标题栏（文件/查看/窗口菜单 + 窗口控制按钮）
 - 侧边栏可拖拽调整宽度，可收起/展开
-- 瀑布流列数可配置（1/2/3 列），存 localStorage
+- 三种查看模式（查看菜单切换，存 localStorage）：
+  - 瀑布流：列数可配置（1/2/3 列），图片按原始比例展示
+  - 横向翻页：单张展示，左右箭头/键盘翻页，循环翻页，底部缩略图条，内置缩放拖拽
+  - 文件列表：等大小网格卡片，正方形缩略图 + 文件名，右键打开文件位置，响应式列数
 - 图片通过 `file:///` 加载（`webSecurity: false`）
 - 图片尺寸从文件头解析，不加载完整文件
 - Workspace 支持别名（alias）、排序（sortBy/sortOrder），持久化到 config.json

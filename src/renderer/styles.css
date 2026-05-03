@@ -250,10 +250,10 @@ html, body {
 }
 
 #sidebar.collapsed #sidebar-collapse-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 0;
-  transition: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
 #workspace-list {
