@@ -16,7 +16,7 @@
   --text-secondary: #6e6e73;
   --text-tertiary: #aeaeb2;
   --border-color: #e5e5ea;
-  --accent-color: #007aff;
+  --accent-color: rgb(100, 200, 200);
   --column-gap: 5px;
   --card-radius: 4px;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -430,17 +430,9 @@ html, body {
   display: block;
 }
 
-.workspace-menu-item.active {
-  color: var(--accent-color);
-}
-
-.workspace-menu-item.active svg {
-  color: var(--accent-color);
-}
-
 .workspace-menu-item.active .check-icon {
-  width: 14px;
-  height: 14px;
+  width: 6px;
+  height: 6px;
   margin-left: auto;
   color: var(--accent-color);
 }
@@ -1020,13 +1012,9 @@ html, body {
   color: var(--text-secondary);
 }
 
-.image-context-item.checked svg {
-  color: var(--accent-color);
-}
-
 .image-context-item .check-icon {
-  width: 14px;
-  height: 14px;
+  width: 6px;
+  height: 6px;
   margin-left: auto;
   color: var(--accent-color);
 }
@@ -1094,7 +1082,7 @@ html, body {
 
 .hidden-eye-icon {
   flex-shrink: 0;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
 .prop-dialog-box {

@@ -250,7 +250,7 @@ function showImageContextMenu(x, y, img, ws) {
   const hidden = isImageHidden(img, ws);
   const hideItem = document.createElement('div');
   hideItem.className = 'image-context-item' + (hidden ? ' checked' : '');
-  hideItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>隐藏</span>' + (hidden ? '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+  hideItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>隐藏</span>' + (hidden ? '<svg class="check-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>' : '');
   hideItem.addEventListener('click', async (e) => {
     e.stopPropagation();
     closeAllMenus();
@@ -309,7 +309,7 @@ function showWorkspaceMenu(anchor, ws, index) {
 
   const sortNameItem = document.createElement('div');
   sortNameItem.className = 'workspace-menu-item' + (sortBy === 'name' ? ' active' : '');
-  sortNameItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg><span>名称</span>' + (sortBy === 'name' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+  sortNameItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg><span>名称</span>' + (sortBy === 'name' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>' : '');
   sortNameItem.addEventListener('click', async (e) => {
     e.stopPropagation();
     ws.sortBy = 'name';
@@ -324,7 +324,7 @@ function showWorkspaceMenu(anchor, ws, index) {
 
   const sortDateItem = document.createElement('div');
   sortDateItem.className = 'workspace-menu-item' + (sortBy === 'date' ? ' active' : '');
-  sortDateItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>日期</span>' + (sortBy === 'date' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+  sortDateItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>日期</span>' + (sortBy === 'date' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>' : '');
   sortDateItem.addEventListener('click', async (e) => {
     e.stopPropagation();
     ws.sortBy = 'date';
@@ -339,7 +339,7 @@ function showWorkspaceMenu(anchor, ws, index) {
 
   const sortTypeItem = document.createElement('div');
   sortTypeItem.className = 'workspace-menu-item' + (sortBy === 'type' ? ' active' : '');
-  sortTypeItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>类型</span>' + (sortBy === 'type' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+  sortTypeItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>类型</span>' + (sortBy === 'type' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>' : '');
   sortTypeItem.addEventListener('click', async (e) => {
     e.stopPropagation();
     ws.sortBy = 'type';
@@ -357,7 +357,7 @@ function showWorkspaceMenu(anchor, ws, index) {
 
   const sortAscItem = document.createElement('div');
   sortAscItem.className = 'workspace-menu-item' + (sortOrder === 'asc' ? ' active' : '');
-  sortAscItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg><span>顺序</span>' + (sortOrder === 'asc' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+  sortAscItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg><span>顺序</span>' + (sortOrder === 'asc' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>' : '');
   sortAscItem.addEventListener('click', async (e) => {
     e.stopPropagation();
     ws.sortOrder = 'asc';
@@ -372,7 +372,7 @@ function showWorkspaceMenu(anchor, ws, index) {
 
   const sortDescItem = document.createElement('div');
   sortDescItem.className = 'workspace-menu-item' + (sortOrder === 'desc' ? ' active' : '');
-  sortDescItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg><span>倒序</span>' + (sortOrder === 'desc' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+  sortDescItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg><span>倒序</span>' + (sortOrder === 'desc' ? '<svg class="check-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>' : '');
   sortDescItem.addEventListener('click', async (e) => {
     e.stopPropagation();
     ws.sortOrder = 'desc';
