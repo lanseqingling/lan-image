@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-LanImage — Windows 本地图片查看器，Electron 构建。侧边栏管理文件夹，瀑布流浏览图片，全屏查看器支持缩放拖拽。
+LanImage — Windows 本地图片查看器，Electron 构建。侧边栏管理文件夹，三种查看模式浏览图片，全屏查看器支持缩放拖拽。
 
 ## Tech Stack
 
