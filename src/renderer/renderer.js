@@ -53,13 +53,14 @@ function toLocalImageUrl(filePath) {
 
 async function init() {
   workspaces = await window.api.getWorkspaces();
-  renderWorkspaces();
   if (workspaces.length > 0) {
-    const firstExpanded = workspaces.find(w => w.expanded);
-    if (firstExpanded) {
-      await loadImages(firstExpanded.path);
-    }
+    const firstWs = workspaces[0];
+    firstWs.expanded = true;
+    await saveWorkspaces();
+    await loadImages(firstWs.path);
   }
+  renderWorkspaces();
+  await window.api.appReady();
 }
 
 addFolderBtn.addEventListener('click', async () => {

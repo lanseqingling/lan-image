@@ -19,15 +19,37 @@ function saveConfig(config) {
 }
 
 let mainWindow;
+let splashWindow;
+let splashShowTime = 0;
+const MIN_SPLASH_MS = 800;
 
 app.whenReady().then(() => {
+  createSplash();
   createWindow();
 });
 
+function createSplash() {
+  splashWindow = new BrowserWindow({
+    width: 1260,
+    height: 810,
+    frame: false,
+    resizable: false,
+    center: true,
+    backgroundColor: '#ffffff',
+    show: false
+  });
+
+  splashWindow.loadFile(path.join(__dirname, '../renderer/splash.html'));
+  splashWindow.once('ready-to-show', () => {
+    splashShowTime = Date.now();
+    splashWindow.show();
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
+    width: 1260,
+    height: 810,
     minWidth: 900,
     minHeight: 600,
     icon: path.join(__dirname, '../../assets/icons/icon.png'),
@@ -39,11 +61,31 @@ function createWindow() {
     },
     frame: false,
     backgroundColor: '#ffffff',
-    autoHideMenuBar: true
+    autoHideMenuBar: true,
+    show: false
   });
 
   mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 }
+
+async function closeSplashAndShowMain() {
+  const elapsed = Date.now() - splashShowTime;
+  const remaining = MIN_SPLASH_MS - elapsed;
+  if (remaining > 0) {
+    await new Promise(r => setTimeout(r, remaining));
+  }
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close();
+    splashWindow = null;
+  }
+  if (mainWindow) {
+    mainWindow.show();
+  }
+}
+
+ipcMain.handle('app-ready', () => {
+  closeSplashAndShowMain();
+});
 
 app.on('window-all-closed', () => {
   app.quit();
