@@ -460,9 +460,10 @@ function showWorkspaceMenu(anchor, ws, index) {
       activeWorkspacePath = null;
       currentImages = [];
       allImages = [];
-      renderWaterfall();
       emptyState.classList.remove('hidden');
       waterfallContainer.style.display = 'none';
+      horizontalViewer.classList.add('hidden');
+      gridContainer.classList.add('hidden');
     }
     await saveWorkspaces();
     renderWorkspaces();
