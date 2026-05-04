@@ -29,7 +29,8 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "include": "src/build/installer.nsh"
     }
   },
   "devDependencies": {
