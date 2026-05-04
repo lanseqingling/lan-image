@@ -176,7 +176,7 @@
   <div id="rename-dialog" class="dialog-overlay hidden">
     <div class="dialog-box">
       <div class="dialog-title">重命名</div>
-      <div class="dialog-hint">仅修改显示名称，不影响底层文件夹</div>
+      <div class="dialog-hint">仅修改显示名称，不修改底层文件夹</div>
       <input type="text" id="rename-input" class="dialog-input" />
       <div class="dialog-actions">
         <button id="rename-cancel" class="dialog-btn dialog-btn-cancel">取消</button>
@@ -220,6 +220,41 @@
       </div>
       <div class="dialog-actions">
         <button id="properties-close" class="dialog-btn dialog-btn-confirm">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="folder-properties-dialog" class="dialog-overlay hidden">
+    <div class="dialog-box prop-dialog-box">
+      <div class="dialog-title">文件夹属性</div>
+      <div class="prop-info">
+        <div class="prop-row">
+          <span class="prop-label">名称</span>
+          <span class="prop-value" id="folder-prop-name"></span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">位置</span>
+          <span class="prop-value prop-location" id="folder-prop-location"></span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">图片数量</span>
+          <span class="prop-value" id="folder-prop-count"></span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">总大小</span>
+          <span class="prop-value" id="folder-prop-size"></span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">创建时间</span>
+          <span class="prop-value" id="folder-prop-created"></span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">修改时间</span>
+          <span class="prop-value" id="folder-prop-modified"></span>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button id="folder-properties-close" class="dialog-btn dialog-btn-confirm">确定</button>
       </div>
     </div>
   </div>

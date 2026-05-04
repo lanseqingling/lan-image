@@ -192,6 +192,28 @@ ipcMain.handle('get-file-info', (event, filePath) => {
   }
 });
 
+ipcMain.handle('get-folder-info', (event, dirPath) => {
+  try {
+    const stat = fs.statSync(dirPath);
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    const imageFiles = entries.filter(entry => entry.isFile() && IMAGE_EXTENSIONS.has(path.extname(entry.name).toLowerCase()));
+    let totalSize = 0;
+    for (const entry of imageFiles) {
+      try {
+        totalSize += fs.statSync(path.join(dirPath, entry.name)).size;
+      } catch (e) {}
+    }
+    return {
+      size: totalSize,
+      imageCount: imageFiles.length,
+      mtime: stat.mtimeMs,
+      birthtime: stat.birthtimeMs
+    };
+  } catch (err) {
+    return null;
+  }
+});
+
 ipcMain.handle('get-image-dimensions', (event, filePath) => {
   try {
     const ext = path.extname(filePath).toLowerCase();

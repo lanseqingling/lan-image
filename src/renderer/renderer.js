@@ -227,6 +227,42 @@ function formatDate(timestamp) {
     ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
 }
 
+async function showFolderPropertiesDialog(ws) {
+  const dialog = document.getElementById('folder-properties-dialog');
+  const closeBtn = document.getElementById('folder-properties-close');
+
+  const folderName = ws.alias || ws.path.split(/[\\/]/).pop() || ws.path;
+  document.getElementById('folder-prop-name').textContent = folderName;
+  document.getElementById('folder-prop-location').textContent = ws.path;
+  document.getElementById('folder-prop-count').textContent = '计算中...';
+  document.getElementById('folder-prop-size').textContent = '计算中...';
+  document.getElementById('folder-prop-created').textContent = '计算中...';
+  document.getElementById('folder-prop-modified').textContent = '计算中...';
+
+  dialog.classList.remove('hidden');
+
+  const onClose = () => {
+    dialog.classList.add('hidden');
+    closeBtn.removeEventListener('click', onClose);
+    dialog.removeEventListener('click', onBackdropClick);
+  };
+
+  const onBackdropClick = (e) => {
+    if (e.target === dialog) onClose();
+  };
+
+  closeBtn.addEventListener('click', onClose);
+  dialog.addEventListener('click', onBackdropClick);
+
+  const folderInfo = await window.api.getFolderInfo(ws.path);
+  if (folderInfo && !dialog.classList.contains('hidden')) {
+    document.getElementById('folder-prop-count').textContent = folderInfo.imageCount + ' 张';
+    document.getElementById('folder-prop-size').textContent = formatFileSize(folderInfo.size);
+    document.getElementById('folder-prop-created').textContent = formatDate(folderInfo.birthtime);
+    document.getElementById('folder-prop-modified').textContent = formatDate(folderInfo.mtime);
+  }
+}
+
 function showImageContextMenu(x, y, img, ws) {
   closeAllMenus();
   const menu = document.createElement('div');
@@ -448,6 +484,18 @@ function showWorkspaceMenu(anchor, ws, index) {
     }
   });
 
+  const propItem = document.createElement('div');
+  propItem.className = 'workspace-menu-item';
+  propItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>属性</span>';
+  propItem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllMenus();
+    showFolderPropertiesDialog(ws);
+  });
+
+  const propSeparator = document.createElement('div');
+  propSeparator.className = 'workspace-menu-separator';
+
   const removeItem = document.createElement('div');
   removeItem.className = 'workspace-menu-item danger';
   removeItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>移除</span>';
@@ -475,6 +523,8 @@ function showWorkspaceMenu(anchor, ws, index) {
   menu.appendChild(pinItem);
   menu.appendChild(moveUpItem);
   menu.appendChild(moveDownItem);
+  menu.appendChild(propItem);
+  menu.appendChild(propSeparator);
   menu.appendChild(removeItem);
   document.body.appendChild(menu);
 
@@ -988,6 +1038,10 @@ document.addEventListener('keydown', (e) => {
     const propDialog = document.getElementById('properties-dialog');
     if (propDialog && !propDialog.classList.contains('hidden')) {
       propDialog.classList.add('hidden');
+    }
+    const folderPropDialog = document.getElementById('folder-properties-dialog');
+    if (folderPropDialog && !folderPropDialog.classList.contains('hidden')) {
+      folderPropDialog.classList.add('hidden');
     }
   }
   if (viewMode === 'horizontal' && !horizontalViewer.classList.contains('hidden')) {
