@@ -180,6 +180,7 @@ html, body {
   flex-direction: column;
   overflow: hidden;
   transition: width 0.2s ease;
+  position: relative;
 }
 
 #sidebar.resizing {
@@ -201,8 +202,15 @@ html, body {
   letter-spacing: -0.01em;
 }
 
+.sidebar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 #add-folder-btn,
-#sidebar-collapse-btn {
+#sidebar-collapse-btn,
+#sidebar-edit-btn {
   width: 32px;
   height: 32px;
   border: none;
@@ -218,7 +226,8 @@ html, body {
 }
 
 #add-folder-btn:hover,
-#sidebar-collapse-btn:hover {
+#sidebar-collapse-btn:hover,
+#sidebar-edit-btn:hover {
   background: var(--sidebar-hover);
   color: var(--text-primary);
 }
@@ -254,6 +263,157 @@ html, body {
   height: 32px;
   border-radius: 6px;
   transition: all 0.15s ease;
+}
+
+#sidebar.collapsed #sidebar-edit-btn {
+  display: none;
+}
+
+#sidebar.collapsed #sidebar-edit-bar {
+  display: none !important;
+}
+
+#sidebar.editing #sidebar-edit-btn {
+  color: var(--accent-color);
+}
+
+#sidebar.editing .workspace-header {
+  cursor: default;
+}
+
+#sidebar.editing .workspace-arrow {
+  display: none;
+}
+
+#sidebar.editing .workspace-more {
+  visibility: hidden;
+}
+
+#sidebar.editing .workspace-images {
+  display: none;
+}
+
+#sidebar.editing #workspace-list {
+  padding-bottom: 48px;
+}
+
+.workspace-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+#sidebar.editing .workspace-checkbox {
+  display: flex;
+}
+
+.workspace-checkbox.checked {
+  border-color: var(--accent-color);
+  background: var(--accent-color);
+}
+
+.workspace-checkbox.checked::after {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+#sidebar-edit-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-color);
+  gap: 8px;
+  background: var(--sidebar-bg);
+  z-index: 10;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+#sidebar-edit-bar.hidden {
+  display: none;
+}
+
+#edit-selected-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  white-space: nowrap;
+  order: 0;
+}
+
+.edit-select-all-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--sidebar-hover);
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+  order: 1;
+}
+
+.edit-select-all-btn:hover {
+  background: var(--sidebar-active);
+}
+
+.edit-delete-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #ff3b30;
+  color: #fff;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+  order: 2;
+}
+
+.edit-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.edit-delete-btn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.edit-cancel-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--sidebar-hover);
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+  order: 3;
+}
+
+.edit-cancel-btn:hover {
+  background: var(--sidebar-active);
 }
 
 #workspace-list {
@@ -614,11 +774,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  padding: 40px;
   color: var(--text-tertiary);
   font-size: 14px;
 }

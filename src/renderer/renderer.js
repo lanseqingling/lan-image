@@ -44,6 +44,8 @@ let viewerStartX = 0;
 let viewerStartY = 0;
 let viewerTranslateX = 0;
 let viewerTranslateY = 0;
+let isEditing = false;
+let editSelectedPaths = new Set();
 let isDragging = false;
 let isResizing = false;
 let isCollapsed = false;
@@ -557,6 +559,20 @@ function renderWorkspaces() {
     const header = document.createElement('div');
     header.className = 'workspace-header' + (activeWorkspacePath === ws.path ? ' active' : '');
 
+    const checkbox = document.createElement('div');
+    checkbox.className = 'workspace-checkbox' + (editSelectedPaths.has(ws.path) ? ' checked' : '');
+    checkbox.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (editSelectedPaths.has(ws.path)) {
+        editSelectedPaths.delete(ws.path);
+        checkbox.classList.remove('checked');
+      } else {
+        editSelectedPaths.add(ws.path);
+        checkbox.classList.add('checked');
+      }
+      updateEditBar();
+    });
+
     const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     arrow.setAttribute('width', '16');
     arrow.setAttribute('height', '16');
@@ -601,6 +617,7 @@ function renderWorkspaces() {
       showWorkspaceMenu(moreBtn, ws, index);
     });
 
+    header.appendChild(checkbox);
     header.appendChild(arrow);
     header.appendChild(nameSpan);
     header.appendChild(countSpan);
@@ -620,6 +637,10 @@ function renderWorkspaces() {
     }
 
     header.addEventListener('click', async () => {
+      if (isEditing) {
+        checkbox.click();
+        return;
+      }
       ws.expanded = !ws.expanded;
       await saveWorkspaces();
       renderWorkspaces();
@@ -1315,6 +1336,75 @@ sidebarCollapseBtn.addEventListener('click', () => {
     sidebar.classList.add('collapsed');
     sidebar.style.width = '';
   }
+});
+
+function enterEditMode() {
+  isEditing = true;
+  editSelectedPaths.clear();
+  sidebar.classList.add('editing');
+  document.getElementById('sidebar-edit-bar').classList.remove('hidden');
+  updateEditBar();
+  renderWorkspaces();
+}
+
+function exitEditMode() {
+  isEditing = false;
+  editSelectedPaths.clear();
+  sidebar.classList.remove('editing');
+  document.getElementById('sidebar-edit-bar').classList.add('hidden');
+  renderWorkspaces();
+}
+
+function updateEditBar() {
+  const count = editSelectedPaths.size;
+  document.getElementById('edit-selected-count').textContent = '已选 ' + count + ' 项';
+  document.getElementById('edit-delete-btn').disabled = count === 0;
+}
+
+document.getElementById('sidebar-edit-btn').addEventListener('click', () => {
+  if (isEditing) {
+    exitEditMode();
+  } else {
+    enterEditMode();
+  }
+});
+
+document.getElementById('edit-cancel-btn').addEventListener('click', exitEditMode);
+
+document.getElementById('edit-select-all-btn').addEventListener('click', () => {
+  const allPaths = workspaces.map(w => w.path);
+  const allSelected = allPaths.every(p => editSelectedPaths.has(p));
+  if (allSelected) {
+    editSelectedPaths.clear();
+  } else {
+    allPaths.forEach(p => editSelectedPaths.add(p));
+  }
+  renderWorkspaces();
+  updateEditBar();
+});
+
+document.getElementById('edit-delete-btn').addEventListener('click', async () => {
+  if (editSelectedPaths.size === 0) return;
+  const toRemove = [...editSelectedPaths];
+  for (const path of toRemove) {
+    const index = workspaces.findIndex(w => w.path === path);
+    if (index >= 0) {
+      workspaces.splice(index, 1);
+      delete imageCache[path];
+      if (activeWorkspacePath === path) {
+        activeWorkspacePath = null;
+        currentImages = [];
+        allImages = [];
+        emptyState.classList.remove('hidden');
+        waterfallContainer.style.display = 'none';
+        horizontalViewer.classList.add('hidden');
+        gridContainer.classList.add('hidden');
+      }
+    }
+  }
+  await saveWorkspaces();
+  exitEditMode();
+  renderWorkspaces();
 });
 
 document.addEventListener('click', (e) => {
