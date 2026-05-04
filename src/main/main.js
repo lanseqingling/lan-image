@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog, nativeImage, shell } = require('ele
 const path = require('path');
 const fs = require('fs');
 
-const configPath = path.join(__dirname, '../../config.json');
+const configPath = path.join(app.getPath('userData'), 'config.json');
 
 function loadConfig() {
   try {

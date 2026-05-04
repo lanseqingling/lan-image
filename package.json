@@ -1,6 +1,6 @@
 {
   "name": "lan-image",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "A local image viewer with waterfall layout",
   "author": "LanImage",
   "main": "src/main/main.js",
@@ -12,17 +12,20 @@
   "build": {
     "appId": "com.lanimage.app",
     "productName": "LanImage",
+    "afterPack": "./src/build/afterPack.js",
     "directories": {
       "output": "dist"
     },
     "files": [
       "src/**/*",
       "assets/icons/icon.ico",
+      "assets/icons/icon.png",
       "package.json"
     ],
     "win": {
       "icon": "assets/icons/icon.ico",
-      "target": "nsis"
+      "target": "nsis",
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
