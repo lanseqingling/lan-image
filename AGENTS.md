@@ -19,8 +19,8 @@ src/renderer/
   index.html           → 主页面
   renderer.js          → UI 逻辑
   styles.css           → 样式
-assets/icons/          → 应用图标
-config.json            → 运行时配置（自动生成，不提交）
+src/build/afterPack.js → electron-builder 打包后用 rcedit 设置 exe 图标
+assets/icons/          → 应用图标（icon.ico + icon.png）
 ```
 
 ## IPC API
@@ -48,7 +48,7 @@ config.json            → 运行时配置（自动生成，不提交）
   - 文件列表：等大小网格卡片，正方形缩略图 + 文件名，右键打开文件位置，响应式列数
 - 图片通过 `file:///` 加载（`webSecurity: false`）
 - 图片尺寸从文件头解析，不加载完整文件
-- Workspace 支持别名（alias）、排序（sortBy/sortOrder），持久化到 config.json
+- Workspace 支持别名（alias）、排序（sortBy/sortOrder），持久化到 userData 目录下的 config.json
 - 重命名使用自定义对话框（Electron 无边框窗口不支持 prompt）
 
 ## Code Conventions
@@ -63,11 +63,17 @@ config.json            → 运行时配置（自动生成，不提交）
 ## Build
 
 - `npm start` — 开发运行
-- `npm run build` — electron-builder 打包 Windows 安装包
+- `npm run build` — electron-builder 打包 Windows 安装包（NSIS）
 - `npm run pack` — electron-packager 打包可执行文件
+
+### electron-builder 注意事项
+
+- `signAndEditExecutable: false`：因 winCodeSign 解压时 Windows 符号链接权限不足，跳过内置的签名和图标设置
+- `afterPack` 钩子（`src/build/afterPack.js`）：打包后手动调用 rcedit 将 icon.ico 嵌入 exe，弥补上述跳过导致的图标缺失
+- `files` 数组需同时包含 `icon.ico`（exe 图标）和 `icon.png`（BrowserWindow 图标 + 标题栏图标）
 
 ## Notes
 
 - `webSecurity: false` 为本地应用设计，允许加载 file:// URL
-- `config.json` 不提交，在 `.gitignore` 中
+- config.json 存储在 `app.getPath('userData')` 目录（非项目根目录），确保 asar 打包后可读写
 - 仅 Windows 平台
