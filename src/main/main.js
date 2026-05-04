@@ -87,6 +87,10 @@ ipcMain.handle('app-ready', () => {
   closeSplashAndShowMain();
 });
 
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
+
 app.on('window-all-closed', () => {
   app.quit();
 });

@@ -32,6 +32,12 @@ const hvNext = document.getElementById('hv-next');
 const hvThumbnailStrip = document.getElementById('hv-thumbnail-strip');
 const hvCounter = document.getElementById('hv-counter');
 const gridContainer = document.getElementById('grid-container');
+const settingsPage = document.getElementById('settings-page');
+const settingsBackBtn = document.getElementById('settings-back-btn');
+const settingsViewModeCards = document.getElementById('settings-view-mode');
+const settingsLayoutRow = document.getElementById('settings-waterfall-cols');
+const settingsGithubLink = document.getElementById('settings-github-link');
+const settingsVersionEl = document.getElementById('settings-version');
 
 let viewerScale = 1;
 let viewerStartX = 0;
@@ -885,6 +891,9 @@ function setViewMode(mode) {
   }
 
   document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
+  if (!settingsPage.classList.contains('hidden')) {
+    syncSettingsUI();
+  }
 }
 
 function renderHorizontalView() {
@@ -1174,6 +1183,83 @@ window.addEventListener('resize', () => {
 
 init();
 
+function openSettings() {
+  settingsPage.classList.remove('hidden');
+  document.getElementById('app').style.display = 'none';
+  syncSettingsUI();
+  loadSettingsVersion();
+}
+
+function closeSettings() {
+  settingsPage.classList.add('hidden');
+  document.getElementById('app').style.display = '';
+  if (currentImages.length > 0) {
+    if (viewMode === 'waterfall') {
+      renderWaterfall();
+    } else if (viewMode === 'horizontal') {
+      renderHorizontalView();
+    } else if (viewMode === 'grid') {
+      renderGridView();
+    }
+  }
+}
+
+function syncSettingsUI() {
+  const cards = settingsViewModeCards.querySelectorAll('.settings-mode-card');
+  cards.forEach(card => {
+    const radio = card.querySelector('input[type="radio"]');
+    card.classList.toggle('active', radio.value === viewMode);
+    radio.checked = radio.value === viewMode;
+  });
+
+  const layoutOptions = settingsLayoutRow.querySelectorAll('.settings-layout-option');
+  layoutOptions.forEach(opt => {
+    const radio = opt.querySelector('input[type="radio"]');
+    opt.classList.toggle('active', parseInt(radio.value, 10) === columnCount);
+    radio.checked = parseInt(radio.value, 10) === columnCount;
+  });
+}
+
+async function loadSettingsVersion() {
+  try {
+    const version = await window.api.getAppVersion();
+    settingsVersionEl.textContent = 'v' + version;
+  } catch (e) {
+    settingsVersionEl.textContent = '-';
+  }
+}
+
+settingsBackBtn.addEventListener('click', closeSettings);
+
+settingsViewModeCards.addEventListener('click', (e) => {
+  const card = e.target.closest('.settings-mode-card');
+  if (!card) return;
+  const radio = card.querySelector('input[type="radio"]');
+  if (!radio) return;
+  setViewMode(radio.value);
+  syncSettingsUI();
+});
+
+settingsLayoutRow.addEventListener('click', (e) => {
+  const opt = e.target.closest('.settings-layout-option');
+  if (!opt) return;
+  const radio = opt.querySelector('input[type="radio"]');
+  if (!radio) return;
+  const newColCount = parseInt(radio.value, 10);
+  columnCount = newColCount;
+  localStorage.setItem('lanimage-columns', String(newColCount));
+  syncSettingsUI();
+});
+
+settingsGithubLink.addEventListener('click', () => {
+  window.api.openExternal('https://github.com/lanseqingling/lan-image');
+});
+
+document.getElementById('settings-release-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  window.api.openExternal('https://github.com/lanseqingling/lan-image/releases/latest');
+});
+
 function updateColumnCheck() {
   document.querySelector('.view-check-1').style.display = columnCount === 1 ? 'block' : 'none';
   document.querySelector('.view-check-2').style.display = columnCount === 2 ? 'block' : 'none';
@@ -1197,6 +1283,9 @@ function setColumnCount(n) {
   document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
   if (currentImages.length > 0 && viewMode === 'waterfall') {
     renderWaterfall();
+  }
+  if (!settingsPage.classList.contains('hidden')) {
+    syncSettingsUI();
   }
 }
 
@@ -1271,6 +1360,10 @@ document.getElementById('menu-add-folder').addEventListener('click', async () =>
 });
 
 document.getElementById('menu-quit').addEventListener('click', () => window.api.windowClose());
+document.getElementById('menu-settings').addEventListener('click', () => {
+  document.querySelectorAll('.titlebar-menu-item.open').forEach(m => m.classList.remove('open'));
+  openSettings();
+});
 document.getElementById('menu-minimize').addEventListener('click', () => window.api.windowMinimize());
 document.getElementById('menu-maximize').addEventListener('click', () => window.api.windowMaximize());
 document.getElementById('menu-close').addEventListener('click', () => window.api.windowClose());

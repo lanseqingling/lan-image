@@ -16,7 +16,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             <span>添加文件夹</span>
           </div>
-          <div class="titlebar-dropdown-item titlebar-dropdown-disabled" id="menu-settings">
+          <div class="titlebar-dropdown-item" id="menu-settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span>设置</span>
           </div>
@@ -112,6 +112,98 @@
       </button>
     </div>
   </div>
+  <div id="settings-page" class="hidden">
+    <button id="settings-back-btn" title="返回首页">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="settings-scroll">
+      <div class="settings-center">
+        <div class="settings-section">
+          <div class="settings-section-title">查看</div>
+          <div class="settings-subtitle">查看模式</div>
+          <div class="settings-mode-cards" id="settings-view-mode">
+            <label class="settings-mode-card" data-value="waterfall">
+              <input type="radio" name="view-mode" value="waterfall">
+              <div class="settings-mode-card-left">
+                <svg class="settings-mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg>
+                <div class="settings-mode-text">
+                  <div class="settings-mode-name">瀑布流</div>
+                  <div class="settings-mode-desc">按原始比例多列展示图片</div>
+                </div>
+              </div>
+              <span class="settings-mode-check"></span>
+            </label>
+            <label class="settings-mode-card" data-value="horizontal">
+              <input type="radio" name="view-mode" value="horizontal">
+              <div class="settings-mode-card-left">
+                <svg class="settings-mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><polyline points="10 9 14 12 10 15"/></svg>
+                <div class="settings-mode-text">
+                  <div class="settings-mode-name">横向翻页</div>
+                  <div class="settings-mode-desc">单张浏览，左右翻页切换</div>
+                </div>
+              </div>
+              <span class="settings-mode-check"></span>
+            </label>
+            <label class="settings-mode-card" data-value="grid">
+              <input type="radio" name="view-mode" value="grid">
+              <div class="settings-mode-card-left">
+                <svg class="settings-mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <div class="settings-mode-text">
+                  <div class="settings-mode-name">文件列表</div>
+                  <div class="settings-mode-desc">网格缩略图与文件名展示</div>
+                </div>
+              </div>
+              <span class="settings-mode-check"></span>
+            </label>
+          </div>
+          <div class="settings-subtitle">布局</div>
+          <div class="settings-layout-row" id="settings-waterfall-cols">
+            <label class="settings-layout-option" data-value="1">
+              <input type="radio" name="waterfall-cols" value="1">
+              <span class="settings-layout-label">单列</span>
+              <span class="settings-layout-check"></span>
+            </label>
+            <label class="settings-layout-option" data-value="2">
+              <input type="radio" name="waterfall-cols" value="2">
+              <span class="settings-layout-label">双列</span>
+              <span class="settings-layout-check"></span>
+            </label>
+            <label class="settings-layout-option" data-value="3">
+              <input type="radio" name="waterfall-cols" value="3">
+              <span class="settings-layout-label">三列</span>
+              <span class="settings-layout-check"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-divider"></div>
+        <div class="settings-section">
+          <div class="settings-section-title">外观</div>
+          <div class="settings-hint">即将支持</div>
+        </div>
+        <div class="settings-divider"></div>
+        <div class="settings-section">
+          <div class="settings-section-title">关于</div>
+          <div class="settings-about-item">
+            <span class="settings-about-label">版本</span>
+            <span class="settings-about-value" id="settings-version">-</span>
+          </div>
+          <div class="settings-about-item">
+            <span class="settings-about-label">作者</span>
+            <span class="settings-about-value">蓝色蜻蛉</span>
+          </div>
+          <div class="settings-about-item">
+            <span class="settings-about-label">GitHub</span>
+            <a class="settings-link" id="settings-github-link">lan-image</a>
+          </div>
+          <div class="settings-about-item">
+            <span class="settings-about-label">最新版本</span>
+            <a class="settings-link" id="settings-release-link" target="_blank" rel="noopener">Release</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="app">
     <aside id="sidebar">
       <div class="sidebar-header">
