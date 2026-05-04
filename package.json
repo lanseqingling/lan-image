@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --x64",
-    "pack": "electron-packager . LanImage --platform=win32 --arch=x64 --out=dist --overwrite --icon=assets/icons/icon.ico --ignore=\"^/(\\.git|\\.idea|\\.trae|node_modules|docs|build)\" --ignore=\"^/(README|AGENTS)\\.md\" --ignore=\"^/\\.gitignore\""
+    "pack": "electron-packager . LanImage --platform=win32 --arch=x64 --out=dist --overwrite --icon=assets/icons/icon.ico --ignore=\"^/(\\.git|\\.idea|\\.trae|node_modules|docs|build)\" --ignore=\"^/(README|AGENTS)\\.md\" --ignore=\"^/\\.gitignore\" && move \"dist\\LanImage-win32-x64\" \"dist\\LanImage-%npm_package_version%-win32-x64\""
   },
   "build": {
     "appId": "com.lanimage.app",
