@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, nativeImage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 
 const configPath = path.join(app.getPath('userData'), 'config.json');
 
@@ -89,6 +90,54 @@ ipcMain.handle('app-ready', () => {
 
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
+});
+
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na > nb) return 1;
+    if (na < nb) return -1;
+  }
+  return 0;
+}
+
+ipcMain.handle('check-for-update', () => {
+  return new Promise((resolve) => {
+    const req = https.get({
+      hostname: 'api.github.com',
+      path: '/repos/lanseqingling/lan-image/releases/latest',
+      headers: { 'User-Agent': 'lan-image-update-checker' },
+      timeout: 8000
+    }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const release = JSON.parse(data);
+          if (release.tag_name) {
+            const latest = release.tag_name.replace(/^v/, '');
+            const current = app.getVersion();
+            resolve({
+              hasUpdate: compareVersions(latest, current) > 0,
+              latestVersion: latest,
+              currentVersion: current,
+              releaseUrl: release.html_url
+            });
+          } else {
+            resolve({ hasUpdate: false });
+          }
+        } catch {
+          resolve({ hasUpdate: false });
+        }
+      });
+    });
+    req.on('error', () => resolve({ hasUpdate: false }));
+    req.on('timeout', () => { req.destroy(); resolve({ hasUpdate: false }); });
+  });
 });
 
 app.on('window-all-closed', () => {

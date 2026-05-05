@@ -1559,3 +1559,36 @@ html, body {
   opacity: 0.75;
   text-decoration: underline;
 }
+
+.settings-about-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-update-hint {
+  font-size: 11px;
+  color: #fff;
+  background: var(--accent-color);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.settings-update-hint:hover {
+  opacity: 0.85;
+}
+
+.settings-update-hint svg {
+  flex-shrink: 0;
+}
+
+.settings-update-hint.hidden {
+  display: none;
+}

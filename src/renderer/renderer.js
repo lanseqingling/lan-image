@@ -1242,11 +1242,27 @@ function syncSettingsUI() {
 }
 
 async function loadSettingsVersion() {
+  const updateHint = document.getElementById('settings-update-hint');
   try {
     const version = await window.api.getAppVersion();
     settingsVersionEl.textContent = 'v' + version;
   } catch (e) {
     settingsVersionEl.textContent = '-';
+  }
+
+  try {
+    const result = await window.api.checkForUpdate();
+    if (result.hasUpdate) {
+      updateHint.classList.remove('hidden');
+      updateHint.onclick = (e) => {
+        e.preventDefault();
+        window.api.openExternal('https://github.com/lanseqingling/lan-image/releases/latest');
+      };
+    } else {
+      updateHint.classList.add('hidden');
+    }
+  } catch {
+    updateHint.classList.add('hidden');
   }
 }
 
@@ -1274,11 +1290,6 @@ settingsLayoutRow.addEventListener('click', (e) => {
 
 settingsGithubLink.addEventListener('click', () => {
   window.api.openExternal('https://github.com/lanseqingling/lan-image');
-});
-
-document.getElementById('settings-release-link').addEventListener('click', (e) => {
-  e.preventDefault();
-  window.api.openExternal('https://github.com/lanseqingling/lan-image/releases/latest');
 });
 
 function updateColumnCheck() {

@@ -178,14 +178,19 @@
         <div class="settings-divider"></div>
         <div class="settings-section">
           <div class="settings-section-title">外观</div>
-          <div class="settings-hint">即将支持</div>
         </div>
         <div class="settings-divider"></div>
         <div class="settings-section">
           <div class="settings-section-title">关于</div>
           <div class="settings-about-item">
             <span class="settings-about-label">版本</span>
-            <span class="settings-about-value" id="settings-version">-</span>
+            <div class="settings-about-value-row">
+              <a class="settings-update-hint hidden" id="settings-update-hint" title="下载最新版本">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>下载最新版本</span>
+              </a>
+              <span class="settings-about-value" id="settings-version">-</span>
+            </div>
           </div>
           <div class="settings-about-item">
             <span class="settings-about-label">作者</span>
@@ -194,10 +199,6 @@
           <div class="settings-about-item">
             <span class="settings-about-label">GitHub</span>
             <a class="settings-link" id="settings-github-link">lan-image</a>
-          </div>
-          <div class="settings-about-item">
-            <span class="settings-about-label">最新版本</span>
-            <a class="settings-link" id="settings-release-link" target="_blank" rel="noopener">Release</a>
           </div>
         </div>
       </div>
