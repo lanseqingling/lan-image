@@ -325,7 +325,7 @@ function showImageContextMenu(x, y, img, ws) {
   menu.style.left = left + 'px';
 }
 
-function showWorkspaceMenu(anchor, ws, index) {
+function showWorkspaceMenu(anchorOrX, ws, index, y) {
   const menu = document.createElement('div');
   menu.className = 'workspace-menu';
 
@@ -536,11 +536,17 @@ function showWorkspaceMenu(anchor, ws, index) {
   menu.appendChild(removeItem);
   document.body.appendChild(menu);
 
-  const rect = anchor.getBoundingClientRect();
-  let top = rect.bottom + 4;
-  let left = rect.left;
+  let top, left;
+  if (typeof anchorOrX === 'number' && typeof y === 'number') {
+    top = y;
+    left = anchorOrX;
+  } else {
+    const rect = anchorOrX.getBoundingClientRect();
+    top = rect.bottom + 4;
+    left = rect.left;
+  }
   if (top + menu.offsetHeight > window.innerHeight) {
-    top = rect.top - menu.offsetHeight - 4;
+    top = window.innerHeight - menu.offsetHeight - 8;
   }
   if (left + menu.offsetWidth > window.innerWidth) {
     left = window.innerWidth - menu.offsetWidth - 8;
@@ -649,6 +655,13 @@ function renderWorkspaces() {
       }
     });
 
+    header.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeAllMenus();
+      showWorkspaceMenu(e.clientX, ws, index, e.clientY);
+    });
+
     item.appendChild(header);
     item.appendChild(imagesDiv);
     workspaceList.appendChild(item);
@@ -733,6 +746,14 @@ function renderImageList(container, images, ws) {
       } else {
         openViewer(img.path);
       }
+    });
+
+    item.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.target.closest('.workspace-image-more')) return;
+      closeAllMenus();
+      showImageContextMenu(e.clientX, e.clientY, img, ws);
     });
 
     container.appendChild(item);
