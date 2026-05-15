@@ -35,6 +35,8 @@ assets/icons/          → 应用图标（icon.ico + icon.png）
 | `openFolderInExplorer` | 在资源管理器中打开文件夹 |
 | `showItemInFolder` | 在资源管理器中定位文件 |
 | `openExternal` | 打开外部链接 |
+| `getDarkMode` | 从 config.json 读取深色模式设置 |
+| `saveDarkMode` | 保存深色模式设置到 config.json |
 
 新增 IPC：main.js 添加 handler → preload.js 暴露方法 → renderer.js 调用
 
