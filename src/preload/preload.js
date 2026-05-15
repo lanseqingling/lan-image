@@ -17,5 +17,7 @@ contextBridge.exposeInMainWorld('api', {
   getFolderInfo: (dirPath) => ipcRenderer.invoke('get-folder-info', dirPath),
   appReady: () => ipcRenderer.invoke('app-ready'),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-  checkForUpdate: () => ipcRenderer.invoke('check-for-update')
+  checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
+  getDarkMode: () => ipcRenderer.invoke('get-dark-mode'),
+  saveDarkMode: (enabled) => ipcRenderer.invoke('save-dark-mode', enabled)
 });

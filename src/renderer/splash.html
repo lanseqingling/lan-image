@@ -9,6 +9,10 @@
       height: 100%;
       background: #ffffff;
       overflow: hidden;
+      transition: background 0.2s ease;
+    }
+    [data-theme="dark"] body {
+      background: #1e1e1e;
     }
     .splash {
       width: 100%;
@@ -27,6 +31,9 @@
       overflow: hidden;
       animation: float 2s ease-in-out infinite;
     }
+    [data-theme="dark"] .splash-logo {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
     .splash-logo img {
       width: 100%;
       height: 100%;
@@ -43,11 +50,22 @@
       width: auto;
       overflow: visible;
     }
+    .splash-title-text {
+      fill: #1d1d1f;
+    }
+    [data-theme="dark"] .splash-title-text {
+      fill: #cccccc;
+    }
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
     }
   </style>
+  <script>
+    if (localStorage.getItem('lanimage-darkmode') === 'true') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
 </head>
 <body>
   <div class="splash">
@@ -56,7 +74,7 @@
     </div>
     <div class="splash-title">
       <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
-        <text x="100" y="38" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="500" fill="#1d1d1f" letter-spacing="2" style="font-smooth: antialiased;">LanImage</text>
+        <text class="splash-title-text" x="100" y="38" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="500" letter-spacing="2" style="font-smooth: antialiased;">LanImage</text>
       </svg>
     </div>
   </div>

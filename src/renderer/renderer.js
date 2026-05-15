@@ -5,6 +5,20 @@ let allImages = [];
 let imageCache = {};
 
 let viewMode = localStorage.getItem('lanimage-viewmode') || 'waterfall';
+let darkMode = localStorage.getItem('lanimage-darkmode') === 'true';
+
+function applyDarkMode(enabled) {
+  darkMode = enabled;
+  localStorage.setItem('lanimage-darkmode', String(enabled));
+  if (enabled) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  window.api.saveDarkMode(enabled);
+}
+
+applyDarkMode(darkMode);
 let hvCurrentIndex = 0;
 let hvScale = 1;
 let hvTranslateX = 0;
@@ -765,7 +779,7 @@ async function loadImages(dirPath) {
   renderWorkspaces();
 
   emptyState.classList.add('hidden');
-  emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>点击左侧 <strong>+</strong> 按钮添加图片文件夹</p>';
+  emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>点击左侧 <strong>+</strong> 按钮添加图片文件夹</p>';
 
   if (viewMode === 'waterfall') {
     waterfallContainer.style.display = 'flex';
@@ -799,7 +813,7 @@ async function loadImages(dirPath) {
     horizontalViewer.classList.add('hidden');
     gridContainer.classList.add('hidden');
     emptyState.classList.remove('hidden');
-    emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>该文件夹下没有图片文件</p>';
+    emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>该文件夹下没有图片文件</p>';
     return;
   }
 
@@ -808,7 +822,7 @@ async function loadImages(dirPath) {
     horizontalViewer.classList.add('hidden');
     gridContainer.classList.add('hidden');
     emptyState.classList.remove('hidden');
-    emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg><p>所有图片已隐藏</p>';
+    emptyState.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg><p>所有图片已隐藏</p>';
     return;
   }
 
@@ -879,7 +893,7 @@ function createImageCard(img, displayWidth, displayHeight, ws) {
   const imgEl = document.createElement('img');
   imgEl.alt = img.name;
   imgEl.style.minHeight = Math.min(displayHeight, 400) + 'px';
-  imgEl.style.background = '#f0f0f0';
+  imgEl.style.background = 'var(--img-placeholder-bg)';
   imgEl.loading = 'lazy';
   imgEl.src = toLocalImageUrl(img.path);
 
@@ -1260,6 +1274,11 @@ function syncSettingsUI() {
     opt.classList.toggle('active', parseInt(radio.value, 10) === columnCount);
     radio.checked = parseInt(radio.value, 10) === columnCount;
   });
+
+  const darkModeToggle = document.getElementById('settings-dark-mode-toggle');
+  if (darkModeToggle) {
+    darkModeToggle.checked = darkMode;
+  }
 }
 
 async function loadSettingsVersion() {
@@ -1311,6 +1330,10 @@ settingsLayoutRow.addEventListener('click', (e) => {
 
 settingsGithubLink.addEventListener('click', () => {
   window.api.openExternal('https://github.com/lanseqingling/lan-image');
+});
+
+document.getElementById('settings-dark-mode-toggle').addEventListener('change', (e) => {
+  applyDarkMode(e.target.checked);
 });
 
 function updateColumnCheck() {

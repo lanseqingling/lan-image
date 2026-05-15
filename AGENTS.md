@@ -59,6 +59,12 @@ assets/icons/          → 应用图标（icon.ico + icon.png）
 - SVG 图标内联
 - CSS 变量定义在 `:root`
 - 用户界面文字使用中文
+- **深色模式必须适配**：
+  - 所有颜色使用 `--` 开头的 CSS 变量，避免硬编码
+  - 图标 SVG 使用 `stroke="currentColor"` 或 `fill="currentColor"` 继承文字色
+  - 新增 UI 组件需在 `[data-theme="dark"]` 中添加覆盖样式
+  - 启动页（splash.html）需添加内联脚本读取 `localStorage.getItem('lanimage-darkmode')`
+  - 主进程创建窗口时需通过 `isDarkMode()` 设置 `backgroundColor`
 
 ## Build
 

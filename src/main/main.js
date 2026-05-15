@@ -15,6 +15,15 @@ function loadConfig() {
   return { workspaces: [] };
 }
 
+function isDarkMode() {
+  try {
+    const config = loadConfig();
+    return config.darkMode === true;
+  } catch {
+    return false;
+  }
+}
+
 function saveConfig(config) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
 }
@@ -30,13 +39,14 @@ app.whenReady().then(() => {
 });
 
 function createSplash() {
+  const bgColor = isDarkMode() ? '#1e1e1e' : '#ffffff';
   splashWindow = new BrowserWindow({
     width: 1260,
     height: 810,
     frame: false,
     resizable: false,
     center: true,
-    backgroundColor: '#ffffff',
+    backgroundColor: bgColor,
     show: false
   });
 
@@ -48,6 +58,7 @@ function createSplash() {
 }
 
 function createWindow() {
+  const bgColor = isDarkMode() ? '#1e1e1e' : '#ffffff';
   mainWindow = new BrowserWindow({
     width: 1260,
     height: 810,
@@ -61,7 +72,7 @@ function createWindow() {
       webSecurity: false
     },
     frame: false,
-    backgroundColor: '#ffffff',
+    backgroundColor: bgColor,
     autoHideMenuBar: true,
     show: false
   });
@@ -222,6 +233,17 @@ ipcMain.handle('get-workspaces', () => {
 ipcMain.handle('save-workspaces', (event, workspaces) => {
   const config = loadConfig();
   config.workspaces = workspaces;
+  saveConfig(config);
+  return true;
+});
+
+ipcMain.handle('get-dark-mode', () => {
+  return isDarkMode();
+});
+
+ipcMain.handle('save-dark-mode', (event, enabled) => {
+  const config = loadConfig();
+  config.darkMode = enabled;
   saveConfig(config);
   return true;
 });
