@@ -19,5 +19,8 @@ contextBridge.exposeInMainWorld('api', {
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
   getDarkMode: () => ipcRenderer.invoke('get-dark-mode'),
-  saveDarkMode: (enabled) => ipcRenderer.invoke('save-dark-mode', enabled)
+  saveDarkMode: (enabled) => ipcRenderer.invoke('save-dark-mode', enabled),
+  getComposerProjects: () => ipcRenderer.invoke('get-composer-projects'),
+  saveComposerProjects: (projects) => ipcRenderer.invoke('save-composer-projects', projects),
+  saveImageData: (options) => ipcRenderer.invoke('save-image-data', options)
 });

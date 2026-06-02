@@ -16,6 +16,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             <span>添加文件夹</span>
           </div>
+          <div class="titlebar-dropdown-item" id="menu-composer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><path d="M15 5h5"/><path d="M17.5 2.5v5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/></svg>
+            <span>图片创作</span>
+          </div>
           <div class="titlebar-dropdown-item" id="menu-settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span>设置</span>
@@ -218,6 +222,64 @@
     </div>
   </div>
 
+  <div id="composer-page" class="hidden">
+    <button id="composer-back-btn" title="返回首页">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="composer-layout">
+      <div id="composer-stage" class="composer-stage">
+        <canvas id="composer-canvas"></canvas>
+      </div>
+
+      <div id="composer-toolbar" class="composer-toolbar">
+        <div class="composer-toolbar-group">
+          <button id="composer-undo-btn" class="composer-tool-btn" title="撤销">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+          </button>
+          <button id="composer-redo-btn" class="composer-tool-btn" title="重做">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
+          </button>
+        </div>
+        <div class="composer-toolbar-group">
+          <button id="composer-zoom-out-btn" class="composer-tool-btn" title="缩小">-</button>
+          <span id="composer-zoom-label" class="composer-zoom-label">100%</span>
+          <button id="composer-zoom-in-btn" class="composer-tool-btn" title="放大">+</button>
+          <button id="composer-pan-mode-btn" class="composer-tool-btn" title="移动画布">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12.2V7.7a1.7 1.7 0 0 1 3.4 0v4.1"/><path d="M9.9 11.5V5.9a1.7 1.7 0 0 1 3.4 0v5.4"/><path d="M13.3 11.6V7.2a1.7 1.7 0 0 1 3.4 0v5"/><path d="M16.7 12.7V9.6a1.65 1.65 0 0 1 3.3 0v4.2c0 4.3-2.9 7.2-7.2 7.2h-2.1a7.1 7.1 0 0 1-6.8-4.9l-.7-2.1a1.75 1.75 0 0 1 3.2-1.4l.7 1.2"/></svg>
+          </button>
+          <button id="composer-grid-toggle" class="composer-tool-btn" title="网格"></button>
+          <button id="composer-snap-toggle" class="composer-tool-btn" title="吸附"><svg viewBox="0 0 24 24"><path d="M5 13V5h8"/><rect x="12" y="12" width="8" height="8" rx="1.2"/></svg></button>
+          <button id="composer-fit-btn" class="composer-tool-btn" title="适应">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+        </div>
+        <span id="composer-project-title" class="composer-project-title">图片创作</span>
+      </div>
+
+      <aside class="composer-projects expanded">
+        <button id="composer-project-toggle" class="composer-capsule-btn" title="画布">
+          <svg class="drawer-open-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <svg class="drawer-close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="composer-float-popover">
+          <div class="composer-drawer-head">
+            <button id="composer-new-project-btn" class="composer-add-project-btn" title="新增画布">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button id="composer-material-toggle" class="composer-drawer-more-btn" title="素材">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </button>
+            <button id="composer-drawer-cancel-btn" class="composer-drawer-more-btn hidden" title="取消">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div id="composer-project-list" class="composer-project-list"></div>
+          <div id="composer-material-list" class="composer-material-list hidden"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
   <div id="app">
     <aside id="sidebar">
       <div class="sidebar-header">
@@ -236,6 +298,14 @@
               <line x1="3" y1="6" x2="3.01" y2="6"/>
               <line x1="3" y1="12" x2="3.01" y2="12"/>
               <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </button>
+          <button id="sidebar-composer-btn" title="图片创作">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="7" height="7" rx="1.5"/>
+              <path d="M15 5h5"/>
+              <path d="M17.5 2.5v5"/>
+              <rect x="4" y="14" width="16" height="6" rx="1.5"/>
             </svg>
           </button>
         </div>
@@ -445,6 +515,7 @@
   <script src="scripts/viewer.js"></script>
   <script src="scripts/settings.js"></script>
   <script src="scripts/sidebar.js"></script>
+  <script src="scripts/composer.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

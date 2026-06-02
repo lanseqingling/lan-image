@@ -1,4 +1,6 @@
 function openSettings() {
+  const composerPageEl = document.getElementById('composer-page');
+  if (composerPageEl) composerPageEl.classList.add('hidden');
   settingsPage.classList.remove('hidden');
   document.getElementById('app').style.display = 'none';
   syncSettingsUI();

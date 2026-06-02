@@ -4,6 +4,7 @@ const fs = require('fs');
 const https = require('https');
 
 const configPath = path.join(app.getPath('userData'), 'config.json');
+const composerProjectsPath = path.join(app.getPath('userData'), 'composer-projects.json');
 
 function loadConfig() {
   try {
@@ -26,6 +27,21 @@ function isDarkMode() {
 
 function saveConfig(config) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+}
+
+function loadComposerProjects() {
+  try {
+    if (fs.existsSync(composerProjectsPath)) {
+      const data = fs.readFileSync(composerProjectsPath, 'utf-8');
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+  } catch (err) {}
+  return [];
+}
+
+function saveComposerProjects(projects) {
+  fs.writeFileSync(composerProjectsPath, JSON.stringify(projects, null, 2), 'utf-8');
 }
 
 let mainWindow;
@@ -246,6 +262,39 @@ ipcMain.handle('save-dark-mode', (event, enabled) => {
   config.darkMode = enabled;
   saveConfig(config);
   return true;
+});
+
+ipcMain.handle('get-composer-projects', () => {
+  return loadComposerProjects();
+});
+
+ipcMain.handle('save-composer-projects', (event, projects) => {
+  saveComposerProjects(Array.isArray(projects) ? projects : []);
+  return true;
+});
+
+ipcMain.handle('save-image-data', async (event, options) => {
+  const format = options && options.format === 'jpeg' ? 'jpeg' : 'png';
+  const defaultName = (options && options.defaultName) || `LanImage-${Date.now()}.${format === 'jpeg' ? 'jpg' : 'png'}`;
+  const result = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: defaultName,
+    filters: [
+      format === 'jpeg'
+        ? { name: 'JPEG Image', extensions: ['jpg', 'jpeg'] }
+        : { name: 'PNG Image', extensions: ['png'] }
+    ]
+  });
+  if (result.canceled || !result.filePath) return { canceled: true };
+
+  try {
+    const dataUrl = options && options.dataUrl;
+    const match = /^data:image\/(?:png|jpeg);base64,(.+)$/.exec(dataUrl || '');
+    if (!match) return { canceled: false, success: false, error: 'Invalid image data' };
+    fs.writeFileSync(result.filePath, Buffer.from(match[1], 'base64'));
+    return { canceled: false, success: true, filePath: result.filePath };
+  } catch (err) {
+    return { canceled: false, success: false, error: err.message };
+  }
 });
 
 ipcMain.handle('get-images-in-directory', (event, dirPath) => {
