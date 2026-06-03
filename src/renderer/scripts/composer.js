@@ -184,11 +184,15 @@ function composerCreateItemFromAsset(asset, index = 0, center) {
   };
 }
 
-function composerCreateProject() {
+function composerDefaultProjectName() {
+  return COMPOSER_MODE_LABEL + ' ' + (composerState.projects.length + 1);
+}
+
+function composerCreateProject(name) {
   const now = Date.now();
   const project = {
     id: composerId('canvas'),
-    name: COMPOSER_MODE_LABEL + ' ' + (composerState.projects.length + 1),
+    name: name || composerDefaultProjectName(),
     mode: 'free',
     createdAt: now,
     updatedAt: now,
@@ -209,6 +213,15 @@ function composerCreateProject() {
   composerSyncControls();
   composerRender();
   composerScheduleSave();
+}
+
+async function composerCreateProjectWithName() {
+  const name = await composerAskProjectName(
+    { name: composerDefaultProjectName() },
+    { title: '新增画布', hint: '为新的自由画布命名' }
+  );
+  if (!name) return;
+  composerCreateProject(name);
 }
 
 function composerScheduleSave() {
@@ -278,11 +291,15 @@ function composerDeleteProject(projectId) {
   composerScheduleSave();
 }
 
-function composerAskProjectName(project) {
+function composerAskProjectName(project, options = {}) {
   return new Promise(resolve => {
+    const title = options.title || '重命名画布';
+    const hint = options.hint || '输入新的画布名称';
     const overlay = document.createElement('div');
     overlay.className = 'dialog-overlay';
-    overlay.innerHTML = '<div class="dialog-box"><div class="dialog-title">重命名画布</div><div class="dialog-hint">仅修改当前画布的显示名称</div><input type="text" class="dialog-input" value=""><div class="dialog-actions"><button class="dialog-btn dialog-btn-cancel">取消</button><button class="dialog-btn dialog-btn-confirm">确定</button></div></div>';
+    overlay.innerHTML = '<div class="dialog-box"><div class="dialog-title">重命名画布</div><div class="dialog-hint">输入新的画布名称</div><input type="text" class="dialog-input" value=""><div class="dialog-actions"><button class="dialog-btn dialog-btn-cancel">取消</button><button class="dialog-btn dialog-btn-confirm">确定</button></div></div>';
+    overlay.querySelector('.dialog-title').textContent = title;
+    overlay.querySelector('.dialog-hint').textContent = hint;
     const input = overlay.querySelector('input');
     const cancel = overlay.querySelector('.dialog-btn-cancel');
     const confirm = overlay.querySelector('.dialog-btn-confirm');
@@ -359,7 +376,7 @@ function composerShowSaveDialog(workspace) {
   const folderName = workspace.alias || workspace.name || folderPath.split(/[\\/]/).pop() || folderPath;
   const overlay = document.createElement('div');
   overlay.className = 'dialog-overlay';
-  overlay.innerHTML = '<div class="dialog-box composer-save-dialog"><div class="dialog-title">保存画布</div><div class="dialog-hint">保存到 ' + folderName + '</div><div class="composer-save-row"><input type="text" class="dialog-input composer-save-name" value=""><div class="composer-save-format"><button class="active" data-format="png">PNG</button><button data-format="jpeg">JPEG</button></div></div><div class="dialog-actions"><button class="dialog-btn dialog-btn-cancel">取消</button><button class="dialog-btn dialog-btn-confirm">确定</button></div></div>';
+  overlay.innerHTML = '<div class="dialog-box composer-save-dialog"><div class="dialog-title">保存图片</div><div class="dialog-hint">保存图片到 ' + folderName + '</div><div class="composer-save-row"><input type="text" class="dialog-input composer-save-name" value=""><div class="composer-save-format"><button class="active" data-format="png">PNG</button><button data-format="jpeg">JPEG</button></div></div><div class="dialog-actions"><button class="dialog-btn dialog-btn-cancel">取消</button><button class="dialog-btn dialog-btn-confirm">确定</button></div></div>';
   const input = overlay.querySelector('.composer-save-name');
   const formatGroup = overlay.querySelector('.composer-save-format');
   const cancel = overlay.querySelector('.dialog-btn-cancel');
@@ -1502,7 +1519,7 @@ composerProjectToggle.addEventListener('click', () => {
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.composer-context-menu')) composerRemoveFloatingMenus();
 });
-document.getElementById('composer-new-project-btn').addEventListener('click', composerCreateProject);
+document.getElementById('composer-new-project-btn').addEventListener('click', composerCreateProjectWithName);
 document.getElementById('composer-undo-btn').addEventListener('click', composerUndo);
 document.getElementById('composer-redo-btn').addEventListener('click', composerRedo);
 document.getElementById('composer-fit-btn').addEventListener('click', composerFitView);
