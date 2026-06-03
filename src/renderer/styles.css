@@ -65,7 +65,7 @@
   --viewer-close-bg: rgba(255, 255, 255, 0.1);
   --viewer-close-hover-bg: rgba(255, 255, 255, 0.2);
   --composer-float-bg: rgba(30, 30, 30, 0.32);
-  --composer-float-fg: #000000;
+  --composer-float-fg: #ffffff;
   --danger-hover-bg: rgba(255, 59, 48, 0.15);
   --settings-back-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }

@@ -8,8 +8,8 @@
       --splash-text: #111827;
       --splash-subtext: #6b7280;
       --splash-accent: #62c9c7;
-      --splash-accent-soft: rgba(98, 201, 199, 0.11);
       --splash-top-light: rgba(255, 255, 255, 0.42);
+      --splash-logo-glow: rgba(98, 201, 199, 0.16);
       --splash-logo-shine: rgba(255, 255, 255, 0.28);
       --splash-logo-shadow-accent: rgba(98, 201, 199, 0.07);
       --splash-logo-shadow: rgba(15, 23, 42, 0.05);
@@ -19,9 +19,9 @@
       --splash-bg: #1e1e1e;
       --splash-text: #f4f4f5;
       --splash-subtext: #a1a1aa;
-      --splash-accent-soft: rgba(98, 201, 199, 0.1);
       --splash-top-light: rgba(255, 255, 255, 0.04);
-      --splash-logo-shine: rgba(255, 255, 255, 0.2);
+      --splash-logo-glow: rgba(98, 201, 199, 0.14);
+      --splash-logo-shine: rgba(255, 255, 255, 0.08);
       --splash-logo-shadow-accent: rgba(98, 201, 199, 0.07);
       --splash-logo-shadow: rgba(0, 0, 0, 0.08);
     }
@@ -46,16 +46,12 @@
       content: "";
       position: fixed;
       inset: 0;
-      background:
-        radial-gradient(circle at 50% 46%, var(--splash-accent-soft), transparent 14%),
-        linear-gradient(180deg, var(--splash-top-light), transparent 42%);
+      background: linear-gradient(180deg, var(--splash-top-light), transparent 42%);
       pointer-events: none;
     }
 
     [data-theme="dark"] body::before {
-      background:
-        radial-gradient(circle at 50% 46%, var(--splash-accent-soft), transparent 15%),
-        linear-gradient(180deg, var(--splash-top-light), transparent 44%);
+      background: linear-gradient(180deg, var(--splash-top-light), transparent 44%);
     }
 
     .splash {
@@ -84,14 +80,27 @@
       box-shadow:
         0 4px 9px var(--splash-logo-shadow-accent),
         0 2px 6px var(--splash-logo-shadow);
-      overflow: hidden;
+      overflow: visible;
+      isolation: isolate;
       animation: logoBreathe 2.8s ease-in-out infinite;
+    }
+
+    .splash-logo::before {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      z-index: -1;
+      border-radius: 31px;
+      background: var(--splash-logo-glow);
+      filter: blur(7px);
+      pointer-events: none;
     }
 
     .splash-logo::after {
       content: "";
       position: absolute;
       inset: 0;
+      border-radius: inherit;
       background: linear-gradient(135deg, var(--splash-logo-shine), transparent 42%);
       pointer-events: none;
     }
@@ -100,6 +109,7 @@
       width: 100%;
       height: 100%;
       display: block;
+      border-radius: inherit;
     }
 
     .splash-title {
