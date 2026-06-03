@@ -2691,7 +2691,7 @@ html, body {
 .composer-context-submenu {
   display: none;
   position: absolute;
-  left: calc(100% + 4px);
+  left: 100%;
   top: -5px;
   width: 128px;
   min-width: 0;
@@ -2702,7 +2702,13 @@ html, body {
   box-shadow: var(--menu-shadow);
 }
 
-.composer-context-submenu-wrap:hover .composer-context-submenu {
+.composer-context-submenu.left {
+  left: auto;
+  right: 100%;
+}
+
+.composer-context-submenu-wrap:hover .composer-context-submenu,
+.composer-context-submenu-wrap:focus-within .composer-context-submenu {
   display: block;
 }
 

@@ -327,6 +327,16 @@ function composerPlaceMenu(menu, x, y) {
   if (top + menu.offsetHeight > window.innerHeight) top = window.innerHeight - menu.offsetHeight - 8;
   menu.style.left = Math.max(8, left) + 'px';
   menu.style.top = Math.max(40, top) + 'px';
+  composerPlaceSubmenus(menu);
+}
+
+function composerPlaceSubmenus(menu) {
+  const menuRect = menu.getBoundingClientRect();
+  menu.querySelectorAll('.composer-context-submenu').forEach(submenu => {
+    const submenuWidth = submenu.offsetWidth || 128;
+    const shouldOpenLeft = menuRect.right + submenuWidth > window.innerWidth - 8;
+    submenu.classList.toggle('left', shouldOpenLeft);
+  });
 }
 
 function composerCreateMenuButton(label, onClick, disabled) {
@@ -341,11 +351,18 @@ function composerCreateMenuButton(label, onClick, disabled) {
   return button;
 }
 
-function composerCreateSubmenu(label, options) {
+function composerCreateSubmenu(label, options, onClick) {
   const wrap = document.createElement('div');
   wrap.className = 'composer-context-submenu-wrap';
   const trigger = document.createElement('button');
   trigger.className = 'composer-context-submenu-trigger';
+  if (onClick) {
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      composerRemoveFloatingMenus();
+      onClick();
+    });
+  }
   trigger.innerHTML = '<span>' + label + '</span><span class="composer-context-chevron">›</span>';
   const submenu = document.createElement('div');
   submenu.className = 'composer-context-submenu';
@@ -364,7 +381,7 @@ function composerShowProjectMenu(x, y, project) {
   menu.appendChild(composerCreateSubmenu('导出', [
     { label: 'PNG', onClick: () => composerExportProject(project, 'png') },
     { label: 'JPEG', onClick: () => composerExportProject(project, 'jpeg') }
-  ]));
+  ], () => composerExportProject(project, 'png')));
   const separator = document.createElement('div');
   separator.className = 'composer-context-separator';
   menu.appendChild(separator);
@@ -591,9 +608,16 @@ function composerResizeCanvas() {
 }
 
 function composerContentBounds(project) {
+  return composerProjectBounds(project, 40);
+}
+
+function composerExportBounds(project) {
+  return composerProjectBounds(project, 0);
+}
+
+function composerProjectBounds(project, padding) {
   const items = project && project.state ? project.state.items : [];
   if (items.length === 0) return { ...COMPOSER_EMPTY_BOUNDS };
-  const padding = 40;
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -1320,7 +1344,7 @@ async function composerExportProject(project, format = 'png') {
 }
 
 async function composerRenderToCanvas(project) {
-  const bounds = composerContentBounds(project);
+  const bounds = composerExportBounds(project);
   const exportCanvas = document.createElement('canvas');
   exportCanvas.width = Math.max(1, Math.round(bounds.w));
   exportCanvas.height = Math.max(1, Math.round(bounds.h));
