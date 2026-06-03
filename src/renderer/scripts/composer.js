@@ -17,6 +17,7 @@ const composerCtx = composerCanvas.getContext('2d');
 const COMPOSER_MODE_LABEL = '自由画布';
 const COMPOSER_EMPTY_BOUNDS = { x: -700, y: -450, w: 1400, h: 900 };
 const COMPOSER_GRID_STEPS = { low: 96, medium: 48, high: 24 };
+const COMPOSER_EDGE_SNAP_SCREEN_DISTANCE = 8;
 
 const composerState = {
   projects: [],
@@ -854,6 +855,111 @@ function composerSnapValue(value) {
   return Math.round(value / step) * step;
 }
 
+function composerMovingBounds(starts, dx = 0, dy = 0) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  starts.forEach(item => {
+    minX = Math.min(minX, item.x + dx);
+    minY = Math.min(minY, item.y + dy);
+    maxX = Math.max(maxX, item.x + item.w + dx);
+    maxY = Math.max(maxY, item.y + item.h + dy);
+  });
+  if (!isFinite(minX)) return { x: 0, y: 0, w: 0, h: 0 };
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+function composerSnapTargets(project, movingIds) {
+  const moving = new Set(movingIds);
+  const x = [];
+  const y = [];
+  project.state.items.forEach(item => {
+    if (moving.has(item.id)) return;
+    x.push(item.x, item.x + item.w);
+    y.push(item.y, item.y + item.h);
+  });
+  return { x, y };
+}
+
+function composerNearestDelta(candidates) {
+  if (candidates.length === 0) return 0;
+  return candidates.reduce((best, current) => Math.abs(current) < Math.abs(best) ? current : best, candidates[0]);
+}
+
+function composerEdgeSnapDelta(bounds, targets) {
+  if (!composerState.snap) return { dx: 0, dy: 0 };
+  const tolerance = COMPOSER_EDGE_SNAP_SCREEN_DISTANCE / Math.max(0.1, composerState.scale);
+  const xEdges = [bounds.x, bounds.x + bounds.w];
+  const yEdges = [bounds.y, bounds.y + bounds.h];
+  const xDeltas = [];
+  const yDeltas = [];
+
+  targets.x.forEach(target => {
+    xEdges.forEach(edge => {
+      const delta = target - edge;
+      if (Math.abs(delta) <= tolerance) xDeltas.push(delta);
+    });
+  });
+
+  targets.y.forEach(target => {
+    yEdges.forEach(edge => {
+      const delta = target - edge;
+      if (Math.abs(delta) <= tolerance) yDeltas.push(delta);
+    });
+  });
+
+  return {
+    dx: composerNearestDelta(xDeltas),
+    dy: composerNearestDelta(yDeltas)
+  };
+}
+
+function composerSnapMoveDelta(project, drag, dx, dy) {
+  if (!composerState.snap) return { dx, dy };
+  const rawBounds = composerMovingBounds(drag.items, dx, dy);
+  const xDeltas = [];
+  const yDeltas = [];
+
+  if (composerState.grid) {
+    xDeltas.push(composerSnapValue(rawBounds.x) - rawBounds.x);
+    yDeltas.push(composerSnapValue(rawBounds.y) - rawBounds.y);
+  }
+
+  const edgeDelta = composerEdgeSnapDelta(rawBounds, composerSnapTargets(project, drag.items.map(item => item.id)));
+  if (edgeDelta.dx !== 0) xDeltas.push(edgeDelta.dx);
+  if (edgeDelta.dy !== 0) yDeltas.push(edgeDelta.dy);
+
+  return {
+    dx: dx + composerNearestDelta(xDeltas),
+    dy: dy + composerNearestDelta(yDeltas)
+  };
+}
+
+function composerSnapResizeWidth(project, drag, width) {
+  if (!composerState.snap) return width;
+  const candidates = [];
+  if (composerState.grid) {
+    candidates.push(composerSnapValue(width));
+  }
+
+  const tolerance = COMPOSER_EDGE_SNAP_SCREEN_DISTANCE / Math.max(0.1, composerState.scale);
+  const targets = composerSnapTargets(project, [drag.id]);
+  const right = drag.x + width;
+  const bottom = drag.y + width / Math.max(0.05, drag.ratio);
+  targets.x.forEach(target => {
+    const delta = target - right;
+    if (Math.abs(delta) <= tolerance) candidates.push(width + delta);
+  });
+  targets.y.forEach(target => {
+    const delta = target - bottom;
+    if (Math.abs(delta) <= tolerance) candidates.push(width + delta * drag.ratio);
+  });
+
+  if (candidates.length === 0) return width;
+  return candidates.reduce((best, current) => Math.abs(current - width) < Math.abs(best - width) ? current : best, candidates[0]);
+}
+
 function composerApplySelectionRect() {
   const project = composerActiveProject();
   if (!project || !composerState.selectionRect) return;
@@ -911,7 +1017,7 @@ function composerStartMove(item, world, append) {
   composerState.dragging = {
     type: 'move',
     startWorld: world,
-    items: moving.map(entry => ({ id: entry.id, x: entry.x, y: entry.y }))
+    items: moving.map(entry => ({ id: entry.id, x: entry.x, y: entry.y, w: entry.w, h: entry.h }))
   };
 }
 
@@ -986,18 +1092,19 @@ window.addEventListener('mousemove', (e) => {
   } else if (drag.type === 'move' && project) {
     const dx = world.x - drag.startWorld.x;
     const dy = world.y - drag.startWorld.y;
+    const snapped = composerSnapMoveDelta(project, drag, dx, dy);
     drag.items.forEach(start => {
       const item = project.state.items.find(entry => entry.id === start.id);
       if (!item) return;
-      item.x = composerSnapValue(start.x + dx);
-      item.y = composerSnapValue(start.y + dy);
+      item.x = start.x + snapped.dx;
+      item.y = start.y + snapped.dy;
     });
   } else if (drag.type === 'resize' && project) {
     const item = project.state.items.find(entry => entry.id === drag.id);
     if (item) {
       const delta = Math.max(world.x - drag.startWorld.x, (world.y - drag.startWorld.y) * drag.ratio);
-      const width = Math.max(24, drag.w + delta);
-      item.w = Math.max(24, composerSnapValue(width));
+      const width = Math.max(24, composerSnapResizeWidth(project, drag, drag.w + delta));
+      item.w = width;
       item.h = Math.max(24, item.w / Math.max(0.05, drag.ratio));
     }
   } else if (drag.type === 'select') {
