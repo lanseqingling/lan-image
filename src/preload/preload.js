@@ -24,5 +24,6 @@ contextBridge.exposeInMainWorld('api', {
   saveStartupAnimationDisabled: (disabled) => ipcRenderer.invoke('save-startup-animation-disabled', disabled),
   getComposerProjects: () => ipcRenderer.invoke('get-composer-projects'),
   saveComposerProjects: (projects) => ipcRenderer.invoke('save-composer-projects', projects),
-  saveImageData: (options) => ipcRenderer.invoke('save-image-data', options)
+  saveImageData: (options) => ipcRenderer.invoke('save-image-data', options),
+  saveImageDataToFolder: (options) => ipcRenderer.invoke('save-image-data-to-folder', options)
 });

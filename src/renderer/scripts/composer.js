@@ -16,7 +16,7 @@ const composerCtx = composerCanvas.getContext('2d');
 
 const COMPOSER_MODE_LABEL = '自由画布';
 const COMPOSER_EMPTY_BOUNDS = { x: -700, y: -450, w: 1400, h: 900 };
-const COMPOSER_GRID_STEPS = { low: 96, medium: 48, high: 24 };
+const COMPOSER_GRID_STEPS = { low: 64, medium: 32, high: 16 };
 const COMPOSER_EDGE_SNAP_SCREEN_DISTANCE = 8;
 
 const composerState = {
@@ -40,6 +40,7 @@ const composerState = {
   expandedMaterialFolder: null,
   dragMaterial: null,
   drawerView: 'projects',
+  savingProjectId: null,
   panMode: false,
   lastRightPanMoved: false
 };
@@ -316,6 +317,107 @@ async function composerRenameProject(project) {
   composerScheduleSave();
 }
 
+function composerEnterSaveMode(project) {
+  if (!project) return;
+  composerState.savingProjectId = project.id;
+  composerState.drawerView = 'save';
+  document.querySelector('.composer-projects').classList.add('expanded');
+  composerRenderSaveFolders();
+  composerSyncDrawerView();
+}
+
+function composerSaveTargetProject() {
+  return composerState.projects.find(project => project.id === composerState.savingProjectId) || composerActiveProject();
+}
+
+function composerRenderSaveFolders() {
+  composerMaterialList.innerHTML = '';
+  const folders = Array.isArray(workspaces) ? workspaces : [];
+  if (folders.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'composer-empty-materials';
+    empty.textContent = '暂无文件夹';
+    composerMaterialList.appendChild(empty);
+    return;
+  }
+
+  folders.forEach(workspace => {
+    const folderPath = workspace.path || workspace;
+    const folderName = workspace.alias || workspace.name || folderPath.split(/[\\/]/).pop() || folderPath;
+    const folderItem = document.createElement('button');
+    folderItem.className = 'composer-folder-item';
+    folderItem.innerHTML = '<span>' + folderName + '</span>';
+    folderItem.addEventListener('click', () => composerShowSaveDialog(workspace));
+    composerMaterialList.appendChild(folderItem);
+  });
+}
+
+function composerShowSaveDialog(workspace) {
+  const project = composerSaveTargetProject();
+  if (!project || !workspace) return;
+  const folderPath = workspace.path || workspace;
+  const folderName = workspace.alias || workspace.name || folderPath.split(/[\\/]/).pop() || folderPath;
+  const overlay = document.createElement('div');
+  overlay.className = 'dialog-overlay';
+  overlay.innerHTML = '<div class="dialog-box composer-save-dialog"><div class="dialog-title">保存画布</div><div class="dialog-hint">保存到 ' + folderName + '</div><div class="composer-save-row"><input type="text" class="dialog-input composer-save-name" value=""><div class="composer-save-format"><button class="active" data-format="png">PNG</button><button data-format="jpeg">JPEG</button></div></div><div class="dialog-actions"><button class="dialog-btn dialog-btn-cancel">取消</button><button class="dialog-btn dialog-btn-confirm">确定</button></div></div>';
+  const input = overlay.querySelector('.composer-save-name');
+  const formatGroup = overlay.querySelector('.composer-save-format');
+  const cancel = overlay.querySelector('.dialog-btn-cancel');
+  const confirm = overlay.querySelector('.dialog-btn-confirm');
+  input.value = project.name;
+  document.body.appendChild(overlay);
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 30);
+
+  const close = () => overlay.remove();
+  const save = async () => {
+    const fileName = input.value.trim();
+    if (!fileName) {
+      input.focus();
+      return;
+    }
+    confirm.disabled = true;
+    const activeFormat = formatGroup.querySelector('button.active');
+    const format = activeFormat && activeFormat.dataset.format === 'jpeg' ? 'jpeg' : 'png';
+    const exportCanvas = await composerRenderToCanvas(project);
+    const dataUrl = exportCanvas.toDataURL(format === 'jpeg' ? 'image/jpeg' : 'image/png', 0.92);
+    const result = await window.api.saveImageDataToFolder({
+      dataUrl,
+      format,
+      fileName,
+      dirPath: folderPath
+    });
+    confirm.disabled = false;
+    if (result && result.success) {
+      close();
+      composerState.drawerView = 'projects';
+      composerState.savingProjectId = null;
+      composerSyncDrawerView();
+      if (activeWorkspacePath === folderPath) {
+        imageCache[folderPath] = null;
+        await loadImages(folderPath);
+      }
+    }
+  };
+
+  cancel.addEventListener('click', close);
+  confirm.addEventListener('click', save);
+  formatGroup.addEventListener('click', (e) => {
+    const button = e.target.closest('button');
+    if (!button) return;
+    formatGroup.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === button));
+  });
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') save();
+    if (e.key === 'Escape') close();
+  });
+}
+
 function composerRemoveFloatingMenus() {
   document.querySelectorAll('.composer-context-menu').forEach(menu => menu.remove());
 }
@@ -378,6 +480,7 @@ function composerShowProjectMenu(x, y, project) {
   menu.className = 'composer-context-menu';
   menu.appendChild(composerCreateMenuButton('置顶', () => composerPinProject(project.id), composerState.projects[0] && composerState.projects[0].id === project.id));
   menu.appendChild(composerCreateMenuButton('重命名', () => composerRenameProject(project)));
+  menu.appendChild(composerCreateMenuButton('保存到文件夹', () => composerEnterSaveMode(project)));
   menu.appendChild(composerCreateSubmenu('导出', [
     { label: 'PNG', onClick: () => composerExportProject(project, 'png') },
     { label: 'JPEG', onClick: () => composerExportProject(project, 'jpeg') }
@@ -536,10 +639,17 @@ function composerRenderMaterials() {
 
 function composerSyncDrawerView() {
   const materialMode = composerState.drawerView === 'materials';
-  composerProjectList.classList.toggle('hidden', materialMode);
-  composerMaterialList.classList.toggle('hidden', !materialMode);
-  composerDrawerCancelBtn.classList.toggle('hidden', !materialMode);
+  const saveMode = composerState.drawerView === 'save';
+  composerProjectList.classList.toggle('hidden', materialMode || saveMode);
+  composerMaterialList.classList.toggle('hidden', !materialMode && !saveMode);
+  composerDrawerCancelBtn.classList.toggle('hidden', !materialMode && !saveMode);
   composerMaterialToggle.classList.toggle('active', materialMode);
+  composerMaterialToggle.classList.toggle('composer-drawer-text-btn', saveMode);
+  if (saveMode) {
+    composerMaterialToggle.innerHTML = '<span>选择文件夹</span>';
+  } else {
+    composerMaterialToggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+  }
 }
 
 async function composerAddImage(image, center) {
@@ -1376,12 +1486,14 @@ document.getElementById('sidebar-composer-btn').addEventListener('click', openCo
 document.getElementById('menu-composer').addEventListener('click', openComposer);
 composerBackBtn.addEventListener('click', closeComposer);
 composerMaterialToggle.addEventListener('click', () => {
+  if (composerState.drawerView === 'save') return;
   composerState.drawerView = 'materials';
   document.querySelector('.composer-projects').classList.add('expanded');
   composerSyncDrawerView();
 });
 composerDrawerCancelBtn.addEventListener('click', () => {
   composerState.drawerView = 'projects';
+  composerState.savingProjectId = null;
   composerSyncDrawerView();
 });
 composerProjectToggle.addEventListener('click', () => {

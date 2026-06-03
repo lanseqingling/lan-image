@@ -319,6 +319,37 @@ ipcMain.handle('save-image-data', async (event, options) => {
   }
 });
 
+ipcMain.handle('save-image-data-to-folder', async (event, options) => {
+  try {
+    const format = options && options.format === 'jpeg' ? 'jpeg' : 'png';
+    const dirPath = options && options.dirPath;
+    if (!dirPath || !fs.existsSync(dirPath)) return { success: false, error: 'Folder not found' };
+
+    const dataUrl = options && options.dataUrl;
+    const match = /^data:image\/(?:png|jpeg);base64,(.+)$/.exec(dataUrl || '');
+    if (!match) return { success: false, error: 'Invalid image data' };
+
+    const ext = format === 'jpeg' ? '.jpg' : '.png';
+    const rawName = String((options && options.fileName) || `LanImage-${Date.now()}`).trim();
+    const safeName = (rawName || `LanImage-${Date.now()}`)
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
+      .replace(/\.+$/g, '')
+      .slice(0, 120) || `LanImage-${Date.now()}`;
+    const baseName = safeName.toLowerCase().endsWith(ext) ? safeName.slice(0, -ext.length) : safeName;
+    let filePath = path.join(dirPath, baseName + ext);
+    let index = 1;
+    while (fs.existsSync(filePath)) {
+      filePath = path.join(dirPath, `${baseName} (${index})${ext}`);
+      index++;
+    }
+
+    fs.writeFileSync(filePath, Buffer.from(match[1], 'base64'));
+    return { success: true, filePath };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
 ipcMain.handle('get-images-in-directory', (event, dirPath) => {
   return getImageFiles(dirPath);
 });

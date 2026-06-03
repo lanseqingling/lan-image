@@ -2606,6 +2606,50 @@ html, body {
   height: 17px;
 }
 
+.composer-drawer-more-btn.composer-drawer-text-btn {
+  width: auto;
+  min-width: 82px;
+  padding: 0 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.composer-save-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.composer-save-row .dialog-input {
+  margin-bottom: 0;
+}
+
+.composer-save-format {
+  height: 34px;
+  padding: 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--content-bg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.composer-save-format button {
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.composer-save-format button.active {
+  background: var(--accent-color);
+  color: #fff;
+}
+
 .composer-project-item {
   grid-template-columns: minmax(0, 1fr) 24px;
   align-items: center;
