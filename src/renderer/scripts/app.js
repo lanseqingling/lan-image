@@ -1,4 +1,8 @@
 async function init() {
+  if (window.api.getStartupAnimationDisabled) {
+    startupAnimationDisabled = await window.api.getStartupAnimationDisabled();
+    localStorage.setItem('lanimage-disable-startup-animation', String(startupAnimationDisabled));
+  }
   workspaces = await window.api.getWorkspaces();
   if (workspaces.length > 0) {
     const firstWs = workspaces[0];

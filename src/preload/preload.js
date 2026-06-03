@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('api', {
   checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
   getDarkMode: () => ipcRenderer.invoke('get-dark-mode'),
   saveDarkMode: (enabled) => ipcRenderer.invoke('save-dark-mode', enabled),
+  getStartupAnimationDisabled: () => ipcRenderer.invoke('get-startup-animation-disabled'),
+  saveStartupAnimationDisabled: (disabled) => ipcRenderer.invoke('save-startup-animation-disabled', disabled),
   getComposerProjects: () => ipcRenderer.invoke('get-composer-projects'),
   saveComposerProjects: (projects) => ipcRenderer.invoke('save-composer-projects', projects),
   saveImageData: (options) => ipcRenderer.invoke('save-image-data', options)

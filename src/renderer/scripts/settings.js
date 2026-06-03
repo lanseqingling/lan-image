@@ -40,6 +40,11 @@ function syncSettingsUI() {
   if (darkModeToggle) {
     darkModeToggle.checked = darkMode;
   }
+
+  const startupAnimationToggle = document.getElementById('settings-startup-animation-toggle');
+  if (startupAnimationToggle) {
+    startupAnimationToggle.checked = startupAnimationDisabled;
+  }
 }
 
 async function loadSettingsVersion() {
@@ -95,6 +100,10 @@ settingsGithubLink.addEventListener('click', () => {
 
 document.getElementById('settings-dark-mode-toggle').addEventListener('change', (e) => {
   applyDarkMode(e.target.checked);
+});
+
+document.getElementById('settings-startup-animation-toggle').addEventListener('change', async (e) => {
+  await applyStartupAnimationDisabled(e.target.checked);
 });
 
 function updateColumnCheck() {

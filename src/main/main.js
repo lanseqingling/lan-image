@@ -25,6 +25,15 @@ function isDarkMode() {
   }
 }
 
+function isStartupAnimationDisabled() {
+  try {
+    const config = loadConfig();
+    return config.disableStartupAnimation === true;
+  } catch {
+    return false;
+  }
+}
+
 function saveConfig(config) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
 }
@@ -66,7 +75,9 @@ function createSplash() {
     show: false
   });
 
-  splashWindow.loadFile(path.join(__dirname, '../renderer/splash.html'));
+  splashWindow.loadFile(path.join(__dirname, '../renderer/splash.html'), {
+    query: { disableAnimation: String(isStartupAnimationDisabled()) }
+  });
   splashWindow.once('ready-to-show', () => {
     splashShowTime = Date.now();
     splashWindow.show();
@@ -98,7 +109,7 @@ function createWindow() {
 
 async function closeSplashAndShowMain() {
   const elapsed = Date.now() - splashShowTime;
-  const remaining = MIN_SPLASH_MS - elapsed;
+  const remaining = isStartupAnimationDisabled() ? 0 : MIN_SPLASH_MS - elapsed;
   if (remaining > 0) {
     await new Promise(r => setTimeout(r, remaining));
   }
@@ -260,6 +271,17 @@ ipcMain.handle('get-dark-mode', () => {
 ipcMain.handle('save-dark-mode', (event, enabled) => {
   const config = loadConfig();
   config.darkMode = enabled;
+  saveConfig(config);
+  return true;
+});
+
+ipcMain.handle('get-startup-animation-disabled', () => {
+  return isStartupAnimationDisabled();
+});
+
+ipcMain.handle('save-startup-animation-disabled', (event, disabled) => {
+  const config = loadConfig();
+  config.disableStartupAnimation = disabled === true;
   saveConfig(config);
   return true;
 });

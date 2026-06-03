@@ -6,6 +6,7 @@ let imageCache = {};
 
 let viewMode = localStorage.getItem('lanimage-viewmode') || 'waterfall';
 let darkMode = localStorage.getItem('lanimage-darkmode') === 'true';
+let startupAnimationDisabled = localStorage.getItem('lanimage-disable-startup-animation') === 'true';
 
 function applyDarkMode(enabled) {
   darkMode = enabled;
@@ -16,6 +17,12 @@ function applyDarkMode(enabled) {
     document.documentElement.removeAttribute('data-theme');
   }
   window.api.saveDarkMode(enabled);
+}
+
+async function applyStartupAnimationDisabled(disabled) {
+  startupAnimationDisabled = disabled;
+  localStorage.setItem('lanimage-disable-startup-animation', String(disabled));
+  await window.api.saveStartupAnimationDisabled(disabled);
 }
 
 applyDarkMode(darkMode);
