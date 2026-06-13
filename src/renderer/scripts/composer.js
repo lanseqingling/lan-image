@@ -36,6 +36,7 @@ const composerState = {
   selectionRect: null,
   history: [],
   redo: [],
+  clipboard: null,
   saveTimer: null,
   expandedMaterialFolder: null,
   dragMaterial: null,
@@ -1401,6 +1402,66 @@ function composerDuplicateSelected() {
   composerScheduleSave();
 }
 
+function composerCopySelected() {
+  const project = composerActiveProject();
+  if (!project || composerState.selectedIds.length === 0) return false;
+  const items = composerSelectedItems(project);
+  if (items.length === 0) return false;
+  const assetIds = new Set(items.map(item => item.assetId));
+  composerState.clipboard = {
+    items: items.map(item => ({ ...item })),
+    assets: project.assets.filter(asset => assetIds.has(asset.id)).map(asset => ({ ...asset })),
+    pasteCount: 0
+  };
+  return true;
+}
+
+function composerPasteClipboard() {
+  const project = composerActiveProject();
+  const clipboard = composerState.clipboard;
+  if (!project || !clipboard || clipboard.items.length === 0) return false;
+
+  const offset = 24 * (clipboard.pasteCount + 1);
+  composerSnapshot();
+  const assetMap = new Map();
+  clipboard.assets.forEach(asset => {
+    const existing = project.assets.find(entry => (
+      entry.path === asset.path &&
+      entry.name === asset.name &&
+      entry.width === asset.width &&
+      entry.height === asset.height
+    ));
+    if (existing) {
+      assetMap.set(asset.id, existing.id);
+      return;
+    }
+    const nextAsset = { ...asset, id: composerId('asset') };
+    project.assets.push(nextAsset);
+    assetMap.set(asset.id, nextAsset.id);
+  });
+
+  const copies = clipboard.items
+    .filter(item => assetMap.has(item.assetId))
+    .map(item => ({
+      ...item,
+      id: composerId('item'),
+      assetId: assetMap.get(item.assetId),
+      x: item.x + offset,
+      y: item.y + offset,
+      locked: false
+    }));
+
+  if (copies.length === 0) return false;
+  project.state.items.push(...copies);
+  clipboard.pasteCount += 1;
+  composerSetSelection(copies.map(item => item.id));
+  composerRenderProjectList();
+  composerSyncControls();
+  composerRender();
+  composerScheduleSave();
+  return true;
+}
+
 function composerDeleteSelected() {
   const project = composerActiveProject();
   if (!project || composerState.selectedIds.length === 0) return;
@@ -1564,6 +1625,25 @@ window.addEventListener('resize', () => {
 document.addEventListener('keydown', (e) => {
   if (composerPage.classList.contains('hidden')) return;
   if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+  if (e.ctrlKey && !e.altKey && e.key.toLowerCase() === 'z') {
+    e.preventDefault();
+    if (e.shiftKey) composerRedo();
+    else composerUndo();
+    return;
+  }
+  if (e.ctrlKey && !e.altKey && e.key.toLowerCase() === 'y') {
+    e.preventDefault();
+    composerRedo();
+    return;
+  }
+  if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'c') {
+    if (composerCopySelected()) e.preventDefault();
+    return;
+  }
+  if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'v') {
+    if (composerPasteClipboard()) e.preventDefault();
+    return;
+  }
   if (e.key === 'Backspace') {
     e.preventDefault();
     composerDeleteSelected();
